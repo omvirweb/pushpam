@@ -181,6 +181,7 @@ Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('flee
 Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
 
 Route::get('/fleet/alldata',[FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
+Route::post('/fleet/alldata',[FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
 
 // Route::post('/create-customer', [CustomerController::class, 'createCustomer'])->name('createCustomer');
 // Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');

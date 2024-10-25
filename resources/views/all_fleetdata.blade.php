@@ -3,6 +3,28 @@
     <div class="container-fluid py-2">
         <div class="row">
             <div class="col-12">
+                <div class="row">
+                    <div class="col-md-12">
+                    <form action="{{ route('fleet.reportScreen_post') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="file">Select File:<span
+                                        class="text-danger required-asterisk">*</span></label>
+                                <select name="listdata" id="listdata" class="form-control">
+                                    @if($filesList)
+                                        <option value="">Select File</option>
+                                        @foreach($filesList as $file)
+                                            <option value="{{$file->id }}" @if($listdata == $file->id) selected @endif>{{ $file->file_name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" id="submit-btn" class="btn btn-success">Create Fleet Data</button>
+                    </form>
+                    </div>
+                </div>
                 
                 <div class="row">
                     <div class="col">

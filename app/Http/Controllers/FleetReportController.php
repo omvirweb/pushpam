@@ -35,10 +35,18 @@ class FleetReportController extends Controller
         return Excel::download(new FleetReportExport($fileId), 'fleet_report_' . $file->file_name . '.xlsx');
     }
 
-    public function displayAllFleetData()
+    public function displayAllFleetData(Request $request)
     {
-        $allData = FleetData::get();
+    
+        $allData = '';
+        $listdata ='';
+        if($request->has('listdata'))
+        {
+            $listdata =$request->listdata;
+            $allData = FleetData::where('file_id',$request->listdata)->get();
+        }
+        $filesList = FleetFile::get();
         $header_arr = array('High Speed Diesel','Lubricants & Oils','Other Items','Spare Parts','Tools & Kits','Tyre-Tube-Flaps','Welding');
-        return view('all_fleetdata',['alldata'=>$allData,'header_arr'=>$header_arr]);
+        return view('all_fleetdata',['alldata'=>$allData,'header_arr'=>$header_arr,'filesList'=>$filesList,'listdata'=>$listdata]);
     }
 }
