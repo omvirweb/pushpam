@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FleetJson;
 use Illuminate\Http\Request;
 use App\Models\FleetFile;
 use App\Models\FleetData;
@@ -19,34 +20,56 @@ class FleetReportController extends Controller
 
     public function generateReport(Request $request)
     {
-        
+
         // Validate the selected file
         /*$request->validate([
             'file_id' => 'required|exists:files,id',
         ]);*/
-        
+
         // Fetch file data
         $fileId = $request->input('file_id');
         $file = FleetFile::find($fileId);
 
-        
+
 
         // Generate the Excel report
         return Excel::download(new FleetReportExport($fileId), 'fleet_report_' . $file->file_name . '.xlsx');
     }
 
+    // public function displayAllFleetData(Request $request)
+    // {
+
+    //     $allData = '';
+    //     $listdata ='';
+    //     if($request->has('listdata'))
+    //     {
+    //         $listdata =$request->listdata;
+    //         $allData = FleetData::where('file_id',$request->listdata)->get();
+    //     }
+    //     $filesList = FleetFile::get();
+    //     $header_arr = array('High Speed Diesel','Lubricants & Oils','Other Items','Spare Parts','Tools & Kits','Tyre-Tube-Flaps','Welding');
+    //     return view('all_fleetdata',['alldata'=>$allData,'header_arr'=>$header_arr,'filesList'=>$filesList,'listdata'=>$listdata]);
+    // }
     public function displayAllFleetData(Request $request)
     {
-    
-        $allData = '';
-        $listdata ='';
-        if($request->has('listdata'))
-        {
-            $listdata =$request->listdata;
-            $allData = FleetData::where('file_id',$request->listdata)->get();
+        $selectedFileId = $request->get('listdata');
+        $filesList = FleetJson::all();
+        $fileData = null;
+
+        if ($selectedFileId) {
+            // Fetch the file data
+            $fleetJson = FleetJson::find($selectedFileId);
+
+            // No need for json_decode, as the 'data' field is already an array
+            $fileData = $fleetJson ? $fleetJson->data : null;
         }
-        $filesList = FleetFile::get();
-        $header_arr = array('High Speed Diesel','Lubricants & Oils','Other Items','Spare Parts','Tools & Kits','Tyre-Tube-Flaps','Welding');
-        return view('all_fleetdata',['alldata'=>$allData,'header_arr'=>$header_arr,'filesList'=>$filesList,'listdata'=>$listdata]);
+        // dd($fileData);
+        return view('all_fleetdata', [
+            'filesList' => $filesList,
+            'fileData' => $fileData,
+            'listdata' => $selectedFileId,
+        ]);
     }
+
+
 }

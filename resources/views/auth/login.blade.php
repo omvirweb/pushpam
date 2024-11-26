@@ -1,7 +1,7 @@
 <x-guest-layout>
     <!-- Header -->
     <div class="text-center my-6">
-        <h1 class="text-3xl font-bold text-gray-900">Balaji Trading</h1>
+        <h1 class="text-3xl font-bold text-gray-900">Pushpam</h1>
     </div>
 
     <!-- Session Status -->

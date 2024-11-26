@@ -53,7 +53,7 @@
             <div class="container-fluid">
                 <!-- Info boxes -->
                 <div class="row">
-                    <div class="card-custom d-flex align-items-center justify-content-between">
+                    {{-- <div class="card-custom d-flex align-items-center justify-content-between">
                         <div class="container">
                             <h4>Total Customer</h4>
                             <p class="font-weight-bold" style="font-size: 25px;">10</p>
@@ -64,11 +64,11 @@
                                 style="width: 50px; height: 55px; border-radius: 10px;">
                                 <i class="fas fa-users"></i>
                             </span>
-                        </div>
+                        </div> --}}
                         <!-- /.info-box-content -->
                     </div>
                     <!-- /.col -->
-                    <div class="card-custom d-flex align-items-center justify-content-between">
+                    {{-- <div class="card-custom d-flex align-items-center justify-content-between">
                         <div class="container">
                             <h4>Total Cash</h4>
                             <p class="font-weight-bold" style="font-size: 25px;"><big>₹</big>9000</p>
@@ -79,7 +79,7 @@
                                 class="info-box-icon bg-success elevation-1 d-flex align-items-center justify-content-center"
                                 style="width: 50px; height: 55px; border-radius: 10px;"><i class="fas fa-wallet"></i></span>
                         </div>
-                    </div>
+                    </div> --}}
                     <!-- /.col -->
                     {{--  <div class="card-custom d-flex align-items-center justify-content-between">
                         <div class="container">
