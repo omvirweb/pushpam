@@ -19,8 +19,8 @@
                                             class="text-danger required-asterisk">*</span></label>
                                     <select name="type" id="type" class="form-control" required>
                                         <option value="">Select Type</option>
-                                        @foreach (config('fleet.types') as $type)
-                                            <option value="{{ $type }}">{{ $type }}</option>
+                                        @foreach ($types as $type)
+                                            <option value="{{ $type->name }}">{{ $type->name }}</option>
                                         @endforeach
                                     </select>
                                     <div class="text-danger error-type">

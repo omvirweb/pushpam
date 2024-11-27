@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FleetJson;
+use App\Models\Type;
 use Illuminate\Http\Request;
 use App\Models\FleetFile;
 use App\Models\FleetData;
@@ -55,21 +56,39 @@ class FleetReportController extends Controller
         $selectedFileId = $request->get('listdata');
         $filesList = FleetJson::all();
         $fileData = null;
+        $filetypes = Type::get(); // Fetch all file types
+        $selectedType = $request->get('type'); // Get the selected file type from the request
+        // dd($selectedType);
+        if ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre') {
+            $allData = '';
+            $listdata = '';
+            if ($request->has('listdata')) {
+                $listdata = $request->listdata;
+                $allData = FleetData::where('file_id', $request->listdata)->get();
+            }
+            $filesList = FleetFile::get();
+            $header_arr = array('High Speed Diesel', 'Lubricants & Oils', 'Other Items', 'Spare Parts', 'Tools & Kits', 'Tyre-Tube-Flaps', 'Welding');
+            return view('all_fleetdata', ['selectedType' => $selectedType, 'fileTypes' => $filetypes,'alldata' => $allData, 'header_arr' => $header_arr, 'filesList' => $filesList, 'listdata' => $listdata]);
+        } {
+            if ($selectedFileId) {
+                // Fetch the file data
+                $fleetJson = FleetJson::find($selectedFileId);
 
-        if ($selectedFileId) {
-            // Fetch the file data
-            $fleetJson = FleetJson::find($selectedFileId);
+                // No need for json_decode, as the 'data' field is already an array
+                $fileData = $fleetJson ? $fleetJson->data : null;
+            }
 
-            // No need for json_decode, as the 'data' field is already an array
-            $fileData = $fleetJson ? $fleetJson->data : null;
+            // Pass selectedType to the view
+            return view('all_fleetdata', [
+                'filesList' => $filesList,
+                'fileData' => $fileData,
+                'listdata' => $selectedFileId,
+                'fileTypes' => $filetypes,
+                'selectedType' => $selectedType, // Pass selectedType here
+            ]);
         }
-        // dd($fileData);
-        return view('all_fleetdata', [
-            'filesList' => $filesList,
-            'fileData' => $fileData,
-            'listdata' => $selectedFileId,
-        ]);
     }
+
 
 
 }

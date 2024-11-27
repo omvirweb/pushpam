@@ -8,7 +8,7 @@ class FleetFile extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['file_name'];
+    protected $fillable = ['type','file_name'];
 
     public function fleetData()
     {
