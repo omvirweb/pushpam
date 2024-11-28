@@ -59,7 +59,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/fleetdata/{id}', [FleetDataController::class, 'destroy'])->name('fleetdata.destroy');
     Route::get('fleetdata/{id}', [FleetDataController::class, 'edit'])->name('fleetdata.edit');
     Route::put('fleetdata/{id}', [FleetDataController::class, 'update'])->name('fleetdata.update');
-    
+
     ////////item pagess////////////
     Route::get('/item/create', [ItemController::class, 'create'])->name('item.create');
     Route::post('/item', [ItemController::class, 'store'])->name('item.store');
@@ -180,8 +180,11 @@ Route::post('/fleet/upload', [FleetController::class, 'upload'])->name('fleet.up
 Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
 Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
 
-Route::get('/fleet/alldata',[FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
-Route::post('/fleet/alldata',[FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
+Route::get('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
+Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
+
+Route::post('/get-files-by-type', [FleetReportController::class, 'getFilesByType'])->name('fleet.getFilesByType');
+
 
 // Route::post('/create-customer', [CustomerController::class, 'createCustomer'])->name('createCustomer');
 // Route::get('/customers', [CustomerController::class, 'index'])->name('customers.index');

@@ -150,6 +150,7 @@
             FONT-SIZE: 15PX;
         }
     </style>
+        @stack('style')
 </head>
 
 <body class="font-sans antialiased">

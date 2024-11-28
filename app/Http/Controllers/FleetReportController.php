@@ -54,41 +54,52 @@ class FleetReportController extends Controller
     public function displayAllFleetData(Request $request)
     {
         $selectedFileId = $request->get('listdata');
-        $filesList = FleetJson::all();
         $fileData = null;
-        $filetypes = Type::get(); // Fetch all file types
-        $selectedType = $request->get('type'); // Get the selected file type from the request
+        $filetypes = Type::get();
+        $selectedType = $request->get('type');
         // dd($selectedType);
-        if ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre') {
-            $allData = '';
-            $listdata = '';
-            if ($request->has('listdata')) {
-                $listdata = $request->listdata;
-                $allData = FleetData::where('file_id', $request->listdata)->get();
-            }
-            $filesList = FleetFile::get();
-            $header_arr = array('High Speed Diesel', 'Lubricants & Oils', 'Other Items', 'Spare Parts', 'Tools & Kits', 'Tyre-Tube-Flaps', 'Welding');
-            return view('all_fleetdata', ['selectedType' => $selectedType, 'fileTypes' => $filetypes,'alldata' => $allData, 'header_arr' => $header_arr, 'filesList' => $filesList, 'listdata' => $listdata]);
-        } {
-            if ($selectedFileId) {
-                // Fetch the file data
-                $fleetJson = FleetJson::find($selectedFileId);
 
-                // No need for json_decode, as the 'data' field is already an array
-                $fileData = $fleetJson ? $fleetJson->data : null;
-            }
+        $selectedFileId = $request->get('listdata');
+        $selectedType = $request->get('type'); 
+        $filesList = FleetFile::where('type', $selectedType)->get(); 
+        // dd($selectedFileId, $selectedType, $filesList);
+        $fileData = null;
+        if ($selectedFileId) {
+            $selectedFile = FleetFile::find($selectedFileId);
 
-            // Pass selectedType to the view
-            return view('all_fleetdata', [
-                'filesList' => $filesList,
-                'fileData' => $fileData,
-                'listdata' => $selectedFileId,
-                'fileTypes' => $filetypes,
-                'selectedType' => $selectedType, // Pass selectedType here
-            ]);
+            if ($selectedFile) {
+                $filePath = storage_path('app/public/uploads/' . $selectedFile->file_name);
+                if (file_exists($filePath)) {
+                    $fileContent = file_get_contents($filePath);
+                    $fileData = json_decode($fileContent, true);
+
+                    if (json_last_error() !== JSON_ERROR_NONE) {
+                        return back()->with('error', 'Invalid JSON format in the selected file.');
+                    }
+                }
+            }
         }
+        $filetypes = Type::get();
+
+        return view('all_fleetdata', [
+            'filesList' => $filesList,
+            'fileData' => $fileData,
+            'listdata' => $selectedFileId,
+            'fileTypes' => $filetypes,
+            'selectedType' => $selectedType,
+        ]);
+
     }
 
 
+    public function getFilesByType(Request $request)
+    {
+        $type = $request->get('type');
+        if ($type) {
+            $files = FleetFile::where('type', $type)->get(['id', 'file_name']);
+            return response()->json($files);
+        }
+        return response()->json([]);
+    }
 
 }

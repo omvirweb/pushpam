@@ -16,6 +16,11 @@ class TypesTableSeeder extends Seeder
         DB::table('types')->insert([
             ['name' => 'Stock Item Wise Vendor'],
             ['name' => 'Fleet Wise Diesel Parts Oil Tyre'],
+            ['name' => 'Material Out Register'],
+            ['name' => 'Godown Wise Item Summary'],
+            ['name' => 'Fleet Details'],
+            ['name' => 'Fleet Wise Trip - Diesel - KMS - Hours'],
+            ['name' => 'TOP Consumable Report'],
         ]);
     }
 }
