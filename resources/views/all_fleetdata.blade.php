@@ -21,6 +21,8 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/scroller/2.4.3/css/scroller.dataTables.min.css">
 @endpush
 
 @section('main-content')
@@ -38,8 +40,8 @@
                                     <select name="type" id="file_type" class="form-control">
                                         <option value="">Select File Type</option>
                                         @foreach ($fileTypes as $type)
-                                            <option value="{{ $type->name }}"
-                                                {{ old('type', $selectedType ?? '') == $type->name ? 'selected' : '' }}>
+                                            <option value="{{ $type->id }}"
+                                                {{ old('type', $selectedType ?? '') == $type->id ? 'selected' : '' }}>
                                                 {{ $type->name }}
                                             </option>
                                         @endforeach
@@ -76,7 +78,7 @@
                             </div>
                             <div class="card-body p-0" style="box-shadow: 0px 5px 10px lightblue;">
                                 <div class="table-responsive">
-                                    @if ($selectedType == 'Godown Wise Item Summary')
+                                    @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
                                         @if ($fileData)
                                             @php
                                                 // Extract the first key (e.g., "Godown Wise Item Summary") and retrieve the data
@@ -89,17 +91,15 @@
 
                                             @if (!empty($entries))
                                                 <table
-                                                    class="custom-datatable align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
+                                                    class="custom-datatable align-items-center mb-0 table-bordered table-hover  dt-responsive">
                                                     <thead class="table-active">
                                                         <tr>
-                                                            <!-- Static Columns -->
                                                             <th class="text-center">S.No.</th>
                                                             <th class="text-center">Name of Item</th>
                                                             <th class="text-center">Part No.</th>
                                                             <th class="text-center">Stock Group</th>
                                                             <th class="text-center">Stock Category</th>
 
-                                                            <!-- Dynamic Columns for Godowns -->
                                                             @if (!empty($entries[0]['Godowns']))
                                                                 @foreach ($entries[0]['Godowns'] as $godown)
                                                                     <th colspan="4" class="text-center">
@@ -113,7 +113,6 @@
                                                             <th></th>
                                                             <th></th>
                                                             <th></th>
-                                                            <!-- Sub-headers for Godowns -->
                                                             @foreach ($entries[0]['Godowns'] as $godown)
                                                                 <th class="text-center">Opening</th>
                                                                 <th class="text-center">Inward</th>
@@ -121,44 +120,18 @@
                                                                 <th class="text-center">Closing</th>
                                                             @endforeach
                                                         </tr>
-
                                                     </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $entry)
-                                                            <tr>
-                                                                <!-- Static Columns -->
-                                                                <td class="text-center">{{ $entry['S.No.'] ?? '-' }}</td>
-                                                                <td class="text-center">{{ $entry['Name of Item'] ?? '-' }}
-                                                                </td>
-                                                                <td class="text-center">{{ $entry['Part No.'] ?? '-' }}
-                                                                </td>
-                                                                <td class="text-center">{{ $entry['Stock Group'] ?? '-' }}
-                                                                </td>
-                                                                <td class="text-center">
-                                                                    {{ $entry['Stock Category'] ?? '-' }}</td>
-
-                                                                <!-- Dynamic Columns for Godowns -->
-                                                                @foreach ($entry['Godowns'] as $godown)
-                                                                    <td class="text-center">
-                                                                        {{ $godown['Opening Balance'] ?? '-' }}</td>
-                                                                    <td class="text-center">
-                                                                        {{ $godown['Inward Quantity'] ?? '-' }}</td>
-                                                                    <td class="text-center">
-                                                                        {{ $godown['Outward Quantity'] ?? '-' }}</td>
-                                                                    <td class="text-center">
-                                                                        {{ $godown['Closing Balance'] ?? '-' }}</td>
-                                                                @endforeach
-                                                            </tr>
-                                                        @endforeach
+                                                    <tbody id="data-table-body">
+                                                        <!-- Initial rows will be injected here via AJAX -->
                                                     </tbody>
                                                 </table>
                                             @else
-                                                <p class="text-center p-4">No data available for the selected file.</p>
+                                                {{-- <p class="text-center p-4">No data available for the selected file.</p> --}}
                                             @endif
                                         @else
-                                            <p class="text-center p-4">No data available for the selected file.</p>
+                                            {{-- <p class="text-center p-4">No data available for the selected file.</p> --}}
                                         @endif
-                                    @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre')
+                                    @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre' || $selectedType == 2)
                                         @if ($fileData)
 
                                             @php
@@ -214,7 +187,7 @@
                                         @else
                                             <p class=" p-4">No data available for the selected file.</p>
                                         @endif
-                                    @elseif ($selectedType == 'Stock Item Wise Vendor')
+                                    @elseif ($selectedType == 'Stock Item Wise Vendor' || $selectedType == 1)
                                         @if ($fileData)
                                             @php
                                                 $rootKey = array_key_first($fileData);
@@ -342,7 +315,7 @@
                                         @else
                                             <p class=" p-4">No data available for the selected file.</p>
                                         @endif
-                                    @elseif ($selectedType == 'TOP Consumable Report')
+                                    @elseif ($selectedType == 'TOP Consumable Report' || $selectedType == 7)
                                         @if ($fileData)
                                             @php
                                                 // Extract the first key (e.g., "Godown Wise Item Summary") and retrieve the data
@@ -480,14 +453,77 @@
 @endsection
 @push('script')
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/scroller/2.4.3/js/dataTables.scroller.min.js"></script>
+
     <script>
+        let page = 1; // Current page
+        const fileId = "{{ $listdata }}";
+        let table;
+
         $(document).ready(function() {
-            // Initialize DataTables once the table is populated
-            $('.custom-datatable').DataTable({
-                responsive: true, // For responsive layout
-                // You can add any additional DataTable options here
+            // Initialize the DataTable once
+            table = $('.custom-datatable').DataTable({
+                scroller: true,
+                deferRender: true,
+                scrollY: 600,
+                autoWidth: false,
+                responsive: false, // Disable responsive
             });
+
+            $(window).scroll(function() {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+                    page++; // Increment page number
+                    loadMoreData();
+                }
+            });
+
+            loadMoreData(); // Load initial data
         });
+
+        function loadMoreData() {
+            $.ajax({
+                url: "{{ route('loadFleetData') }}",
+                method: 'GET',
+                data: {
+                    fileId: fileId,
+                    page: page,
+                },
+                success: function(data) {
+                    console.log(data);
+                    if (data.length > 0) {
+                        // Clear existing rows before adding new ones
+                        let rows = [];
+                        data.forEach(function(item) {
+                            let row = `<tr>
+                        <td class="">${item['S.No.'] ?? '-'}</td>
+                        <td class="">${item['Name of Item'] ?? '-'}</td>
+                        <td class="text-end">${item['Part No.'] ?? '-'}</td>
+                        <td class="">${item['Stock Group'] ?? '-'}</td>
+                        <td class="">${item['Stock Category'] ?? '-'}</td>`;
+
+                            item['Godowns'].forEach(function(godown) {
+                                row += `
+                        <td class="text-end">${godown['Opening Balance'] ?? '-'}</td>
+                        <td class="text-end">${godown['Inward Quantity'] ?? '-'}</td>
+                        <td class="text-end">${godown['Outward Quantity'] ?? '-'}</td>
+                        <td class="text-end">${godown['Closing Balance'] ?? '-'}</td>
+                        `;
+                            });
+
+                            row += `</tr>`;
+                            rows.push($(row)[0]); // Push the row element to an array
+                        });
+
+                        // Add the new rows to the DataTable
+                        table.rows.add(rows); // Add rows to the table
+                        table.draw(); // Redraw the table to reflect changes
+                    }
+                },
+                error: function() {
+                    console.log('Error loading data');
+                }
+            });
+        }
 
         document.addEventListener("DOMContentLoaded", function() {
 

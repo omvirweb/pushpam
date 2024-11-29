@@ -20,7 +20,7 @@
                                     <select name="type" id="type" class="form-control" required>
                                         <option value="">Select Type</option>
                                         @foreach ($types as $type)
-                                            <option value="{{ $type->name }}">{{ $type->name }}</option>
+                                            <option value="{{ $type->id }}">{{ $type->name }}</option>
                                         @endforeach
                                     </select>
                                     <div class="text-danger error-type">

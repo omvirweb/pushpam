@@ -183,6 +183,9 @@ Route::post('/fleet/generate-report', [FleetReportController::class, 'generateRe
 Route::get('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
 Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
 
+Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
+
+
 Route::post('/get-files-by-type', [FleetReportController::class, 'getFilesByType'])->name('fleet.getFilesByType');
 
 

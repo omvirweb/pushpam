@@ -54,16 +54,13 @@ class FleetReportController extends Controller
     public function displayAllFleetData(Request $request)
     {
         $selectedFileId = $request->get('listdata');
-        $fileData = null;
-        $filetypes = Type::get();
         $selectedType = $request->get('type');
-        // dd($selectedType);
+        $filesList = FleetFile::where('type', $selectedType)->get();
 
-        $selectedFileId = $request->get('listdata');
-        $selectedType = $request->get('type'); 
-        $filesList = FleetFile::where('type', $selectedType)->get(); 
-        // dd($selectedFileId, $selectedType, $filesList);
+        // Initialize file data as null initially
         $fileData = null;
+
+        // If a file is selected, read its contents
         if ($selectedFileId) {
             $selectedFile = FleetFile::find($selectedFileId);
 
@@ -79,16 +76,44 @@ class FleetReportController extends Controller
                 }
             }
         }
-        $filetypes = Type::get();
 
+        // Return the basic view
         return view('all_fleetdata', [
             'filesList' => $filesList,
             'fileData' => $fileData,
             'listdata' => $selectedFileId,
-            'fileTypes' => $filetypes,
+            'fileTypes' => Type::get(),
             'selectedType' => $selectedType,
         ]);
+    }
 
+    public function loadFleetData(Request $request)
+    {
+        $selectedFileId = $request->get('fileId');
+        $page = $request->get('page', 1);  // Default to 1st page if not set
+        $perPage = 500;  // Number of records to load per request
+
+        // Find the selected file
+        $selectedFile = FleetFile::find($selectedFileId);
+        $fileData = [];
+
+        if ($selectedFile) {
+            $filePath = storage_path('app/public/uploads/' . $selectedFile->file_name);
+
+            if (file_exists($filePath)) {
+                $fileContent = file_get_contents($filePath);
+                $allData = json_decode($fileContent, true);
+                $allData = $allData['Godown Wise Item Summary'];
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // Paginate the data based on the requested page and perPage
+                    $fileData = array_slice($allData, ($page - 1) * $perPage, $perPage);
+                }
+            }
+        }
+
+        // Return the paginated data as JSON
+        return response()->json($fileData);
     }
 
 
