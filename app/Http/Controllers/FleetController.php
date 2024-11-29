@@ -26,22 +26,31 @@ class FleetController extends Controller
 
     public function upload(Request $request)
     {
-        $input = $request->all();
-
-
-
-        // Validate the request
         $validator = Validator::make($request->all(), [
             'file' => 'required|file|max:204800',
         ]);
 
         if ($validator->fails()) {
             return redirect()->back()
-                ->withErrors($validator) // Attach the errors to the session
-                ->withInput(); // Preserve the input fields (optional)
+                ->withErrors($validator)
+                ->withInput();
         }
 
-        // Handle the file upload
+        ini_set('max_execution_time', 300); // 5 minutes
+        ini_set('memory_limit', '512M');
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $filePath = $file->storeAs('uploads', $fileName, 'public');
+            $fileModel = FleetFile::create([
+                'file_name' => $fileName,
+                'type' => $request->type,
+            ]);
+
+            return back()->with('success', 'File uploaded and data saved successfully!');
+        }
+        return back()->with('error', 'Upload failed!');
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
@@ -59,18 +68,7 @@ class FleetController extends Controller
                 'type' => $request->type,
             ]);
             return back()->with('success', 'File uploaded and data saved successfully!');
-            // try {
-            //     // Store JSON data in the fleet_json table
-            //     FleetJson::create([
 
-            //         'type' => $request->type,
-            //         'file_name' => $fileName,
-            //         'data' => $jsonData, // Store entire JSON content
-            //     ]);
-
-            // } catch (\Exception $e) {
-            //     return back()->with('error', 'Failed to save data: ' . $e->getMessage());
-            // }
         }
 
         // If upload failed, return an error response
