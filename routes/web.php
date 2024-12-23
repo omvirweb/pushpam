@@ -12,6 +12,7 @@ use App\Http\Controllers\TransactionsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\UserController;
+use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Report2Controller;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\FleetController;
@@ -167,15 +168,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/dana', [DanaController::class, 'index'])->name('dana');
     Route::post('/dana/store', [DanaController::class, 'store'])->name('dana.store');
     Route::get('/dana/data', [DanaController::class, 'getData'])->name('dana.data');
+
+    Route::resource('companies', CompanyController::class);
 });
 
 
-// Fleet 
+// Fleet
 
 Route::get('/fleet/upload', [FleetController::class, 'index'])->name('fleet.uploadForm');
 Route::post('/fleet/upload', [FleetController::class, 'upload'])->name('fleet.upload');
 
-//Fleet Report 
+//Fleet Report
 
 Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
 Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
