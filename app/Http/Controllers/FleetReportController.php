@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\FleetFile;
 use App\Models\FleetData;
 use App\Exports\FleetReportExport; // Custom export class for Excel
+use App\Models\Company;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FleetReportController extends Controller
@@ -55,7 +56,10 @@ class FleetReportController extends Controller
     {
         $selectedFileId = $request->get('listdata');
         $selectedType = $request->get('type');
-        $filesList = FleetFile::where('type', $selectedType)->get();
+        $selectedCompany = $request->get('company');
+        $filesList = FleetFile::where('type', $selectedType)->when($selectedCompany, function ($query) use ($selectedCompany) {
+            $query->where('company_id', $selectedCompany);
+        })->get();
 
         // Initialize file data as null initially
         $fileData = null;
@@ -83,7 +87,9 @@ class FleetReportController extends Controller
             'fileData' => $fileData,
             'listdata' => $selectedFileId,
             'fileTypes' => Type::get(),
+            'companies' => Company::get(),
             'selectedType' => $selectedType,
+            'selectedCompany' => $selectedCompany,
         ]);
     }
 
@@ -117,14 +123,20 @@ class FleetReportController extends Controller
     }
 
 
-    public function getFilesByType(Request $request)
+    public function getFiles(Request $request)
     {
         $type = $request->get('type');
+        $company = $request->get('company');
+        $query = FleetFile::query();
         if ($type) {
-            $files = FleetFile::where('type', $type)->get(['id', 'file_name']);
-            return response()->json($files);
+            $query->where('type', $type);
         }
-        return response()->json([]);
-    }
+        if ($company) {
+            $query->where('company_id', $company);
+        }
 
+        $files = $query->get(['id', 'file_name']);
+
+        return response()->json($files);
+    }
 }

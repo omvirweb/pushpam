@@ -208,7 +208,7 @@ Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetDat
 Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
 
 
-Route::post('/get-files-by-type', [FleetReportController::class, 'getFilesByType'])->name('fleet.getFilesByType');
+Route::post('/get-files', [FleetReportController::class, 'getFiles'])->name('fleet.getFiles');
 
 
 // Route::post('/create-customer', [CustomerController::class, 'createCustomer'])->name('createCustomer');

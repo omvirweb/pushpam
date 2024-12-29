@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FleetFile;
+use App\Models\Type;
 
 class UploadJsonFiles extends Command
 {
@@ -40,17 +42,55 @@ class UploadJsonFiles extends Command
                     $this->error("Invalid JSON format in file: $file");
                     continue;
                 }
+                $companyId = 0;
                 $keys = array_keys($jsonData);
+
+                if (isset($jsonData['Company Details']) && is_array($jsonData['Company Details'])) {
+                    foreach ($jsonData['Company Details'] as $companyDetail) {
+                        $companyCode = $companyDetail['Company Code'] ?? null;
+                        $companyName = $companyDetail['Company Name'] ?? null;
+                        $companyAddress = $companyDetail['Address'] ?? null;
+                        if ($companyCode) {
+                            $this->info("Processing company: $companyCode");
+                            $company = Company::where('code', $companyCode)->first();
+                            if ($company) {
+                                $company->update([
+                                    'name' => $$companyName,
+                                    'address' => $companyAddress,
+                                ]);
+                                $this->info("Company updated: $companyCode");
+                            } else {
+                                if ($companyName) {
+                                    $company = Company::create([
+                                        'code' => $companyCode,
+                                        'name' => $companyName,
+                                        'address' => $companyAddress,
+                                    ]);
+                                    $this->info("Company added: $companyCode");
+                                }
+                            }
+                            $companyId = $company->id;
+                        } else {
+                            $this->error("Company Code missing in 'Company Details' for file: $file");
+                        }
+                    }
+                }
+
+                $companyDetails = isset($keys[0]) ? $keys[0] : null;
                 $type = isset($keys[1]) ? $keys[1] : null;
                 $fileName = time() . '_' . basename($file);
                 if ($type) {
-                    ini_set('max_execution_time', 300);
-                    ini_set('memory_limit', '512M');
-                    $filePath = Storage::disk('public')->putFileAs('uploads', $file, $fileName);
-                    FleetFile::create([
-                        'file_name' => $fileName,
-                        'type' => $type,
-                    ]);
+                    $typeData = Type::where('name', $type)->first();
+                    if ($typeData) {
+                        ini_set('max_execution_time', 300);
+                        ini_set('memory_limit', '512M');
+                        $filePath = Storage::disk('public')->putFileAs('uploads', $file, $fileName);
+                        FleetFile::create([
+                            'file_name' => $fileName,
+                            'type' => $typeData->id,
+                            'company_id' => $companyId,
+                        ]);
+                    }
                 } else {
                     $this->error("Type key not found after 'Company Details' in file: $file");
                 }
