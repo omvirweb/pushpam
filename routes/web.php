@@ -19,6 +19,7 @@ use App\Http\Controllers\FleetController;
 use App\Http\Controllers\FleetReportController;
 use App\Http\Controllers\FleetDataController;
 use App\Http\Controllers\UserController as AdminUserController;
+use Illuminate\Support\Facades\Artisan;
 
 Route::resource('permissions', App\Http\Controllers\PermissionController::class);
 
@@ -180,6 +181,22 @@ Route::middleware('auth')->group(function () {
 Route::get('/fleet/upload', [FleetController::class, 'index'])->name('fleet.uploadForm');
 Route::post('/fleet/upload', [FleetController::class, 'upload'])->name('fleet.upload');
 
+Route::get('/fleet/upload-cron', function () {
+    try {
+        $exitCode = Artisan::call('json:upload');
+        $output = Artisan::output();
+        return response()->json([
+            'message' => 'JSON upload cron executed successfully',
+            'exit_code' => $exitCode,
+            'output' => $output,
+        ]);
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => 'An error occurred during execution',
+            'details' => $e->getMessage(),
+        ], 500);
+    }
+});
 //Fleet Report
 
 Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
