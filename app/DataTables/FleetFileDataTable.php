@@ -31,7 +31,7 @@ class FleetFileDataTable extends DataTable
             ->editColumn(
                 'type',
                 function ($row) {
-                    return $row->type->name ?? '-';
+                    return $row->typeData->name ?? ($row->type ?? '-');
                 }
             )
             ->editColumn(
@@ -53,7 +53,7 @@ class FleetFileDataTable extends DataTable
      */
     public function query(FleetFile $model)
     {
-        return $model->newQuery();
+        return $model->newQuery()->with(['typeData', 'company'])->latest();
     }
 
     /**

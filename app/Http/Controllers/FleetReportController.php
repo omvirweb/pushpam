@@ -83,7 +83,11 @@ class FleetReportController extends Controller
             }
         }
 
-        $companies = $user->companies;
+        if ($user->id == 1) {
+            $companies = Company::all();
+        } else {
+            $companies = $user->companies;
+        }
 
         // Return the basic view
         return view('all_fleetdata', [

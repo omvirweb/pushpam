@@ -85,15 +85,16 @@
                         </div>
                         <div class="card-body p-0" style="box-shadow: 0px 5px 10px lightblue;">
                             <div class="table-responsive">
-                                @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
                                 @if ($fileData)
                                 @php
-                                // Extract the first key (e.g., "Godown Wise Item Summary") and retrieve the data
                                 $keys = array_keys($fileData);
                                 $tableName = isset($keys[1]) ? $keys[1] : null;
-                                $entries = $fileData[$tableName]; // Array of item entries
+                                $entries = $fileData[$tableName];
                                 @endphp
+                                @endif
 
+                                @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
+                                @if ($fileData)
                                 <h4 class="text-center mt-4">{{ $tableName }}</h4>
                                 <!-- Display the table name -->
 
@@ -140,11 +141,6 @@
                                 @endif
                                 @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre' || $selectedType == 2)
                                 @if ($fileData)
-
-                                @php
-                                $tableName = array_key_first($fileData);
-                                $entries = $fileData[$tableName];
-                                @endphp
                                 <h4 class="text-center mt-4">{{ $tableName }}</h4>
 
                                 @if (!empty($entries))
@@ -317,11 +313,6 @@
                                 @endif
                                 @elseif ($selectedType == 'TOP Consumable Report' || $selectedType == 7)
                                 @if ($fileData)
-                                @php
-                                // Extract the first key (e.g., "Godown Wise Item Summary") and retrieve the data
-                                $tableName = array_key_first($fileData);
-                                $entries = $fileData[$tableName]; // Array of item entries
-                                @endphp
 
                                 <h4 class="text-center mt-4">{{ $tableName }}</h4>
                                 <!-- Display the table name -->
@@ -380,12 +371,6 @@
                                 @endif
                                 @else
                                 @if ($fileData)
-                                @php
-                                // Extract the first key from $fileData (e.g., "Material Out Register")
-                                $tableName = array_key_first($fileData);
-                                $entries = $fileData[$tableName]; // The data entries
-                                @endphp
-
                                 <h4 class="text-center mt-4">{{ $tableName }}</h4>
                                 <!-- Display the table name -->
 

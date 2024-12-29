@@ -15,9 +15,9 @@ class FleetFile extends Model
     {
         return $this->hasMany(FleetData::class);
     }
-    public function type()
+    public function typeData()
     {
-        return $this->belongsTo(Type::class);
+        return $this->belongsTo(Type::class, 'type', 'id');
     }
     public function company()
     {

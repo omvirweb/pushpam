@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DataTables\FleetFileDataTable;
+use App\Models\Company;
 use App\Models\FileColumn;
 use App\Models\FileRow;
 use App\Models\File;
@@ -41,14 +42,42 @@ class FleetController extends Controller
         ini_set('memory_limit', '512M');
 
         if ($request->hasFile('file')) {
+            $companyId = 0;
             $file = $request->file('file');
+            $jsonData = json_decode(file_get_contents($file), true);
+            $keys = array_keys($jsonData);
+            if (isset($jsonData['Company Details']) && is_array($jsonData['Company Details'])) {
+                foreach ($jsonData['Company Details'] as $companyDetail) {
+                    $companyCode = $companyDetail['Company Code'] ?? null;
+                    $companyName = $companyDetail['Company Name'] ?? null;
+                    $companyAddress = $companyDetail['Address'] ?? null;
+                    if ($companyCode) {
+                        $company = Company::where('code', $companyCode)->first();
+                        if ($company) {
+                            $company->update([
+                                'name' => $companyName,
+                                'address' => $companyAddress,
+                            ]);
+                        } else {
+                            if ($companyName) {
+                                $company = Company::create([
+                                    'code' => $companyCode,
+                                    'name' => $companyName,
+                                    'address' => $companyAddress,
+                                ]);
+                            }
+                        }
+                        $companyId = $company->id;
+                    }
+                }
+            }
             $fileName = time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('uploads', $fileName, 'public');
             $fileModel = FleetFile::create([
                 'file_name' => $fileName,
                 'type' => $request->type,
+                'company_id' => $companyId,
             ]);
-
             return back()->with('success', 'File uploaded and data saved successfully!');
         }
         return back()->with('error', 'Upload failed!');
