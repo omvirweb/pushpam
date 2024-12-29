@@ -54,6 +54,7 @@ class FleetReportController extends Controller
     // }
     public function displayAllFleetData(Request $request)
     {
+        $user = auth()->user();
         $selectedFileId = $request->get('listdata');
         $selectedType = $request->get('type');
         $selectedCompany = $request->get('company');
@@ -81,13 +82,15 @@ class FleetReportController extends Controller
             }
         }
 
+        $companies = $user->companies;
+
         // Return the basic view
         return view('all_fleetdata', [
             'filesList' => $filesList,
             'fileData' => $fileData,
             'listdata' => $selectedFileId,
             'fileTypes' => Type::get(),
-            'companies' => Company::get(),
+            'companies' => $companies,
             'selectedType' => $selectedType,
             'selectedCompany' => $selectedCompany,
         ]);

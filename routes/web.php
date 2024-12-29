@@ -171,15 +171,21 @@ Route::middleware('auth')->group(function () {
     Route::post('/dana/store', [DanaController::class, 'store'])->name('dana.store');
     Route::get('/dana/data', [DanaController::class, 'getData'])->name('dana.data');
 
+
+    //Fleet Report
+    Route::get('/fleet/upload', [FleetController::class, 'index'])->name('fleet.uploadForm');
+    Route::post('/fleet/upload', [FleetController::class, 'upload'])->name('fleet.upload');
+
+    Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
+    Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
+    Route::get('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
+    Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
+    Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
+    Route::post('/get-files', [FleetReportController::class, 'getFiles'])->name('fleet.getFiles');
+
     Route::resource('companies', CompanyController::class);
     Route::resource('users', AdminUserController::class);
 });
-
-
-// Fleet
-
-Route::get('/fleet/upload', [FleetController::class, 'index'])->name('fleet.uploadForm');
-Route::post('/fleet/upload', [FleetController::class, 'upload'])->name('fleet.upload');
 
 Route::get('/fleet/upload-cron', function () {
     try {
@@ -197,18 +203,6 @@ Route::get('/fleet/upload-cron', function () {
         ], 500);
     }
 });
-//Fleet Report
-
-Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
-Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
-
-Route::get('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
-Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
-
-Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
-
-
-Route::post('/get-files', [FleetReportController::class, 'getFiles'])->name('fleet.getFiles');
 
 
 // Route::post('/create-customer', [CustomerController::class, 'createCustomer'])->name('createCustomer');
