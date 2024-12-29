@@ -9,6 +9,7 @@ use App\Models\FleetFile;
 use App\Models\FleetData;
 use App\Exports\FleetReportExport; // Custom export class for Excel
 use App\Models\Company;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class FleetReportController extends Controller
@@ -141,5 +142,22 @@ class FleetReportController extends Controller
         $files = $query->get(['id', 'file_name']);
 
         return response()->json($files);
+    }
+
+    public function deleteFleetFile($id)
+    {
+        try {
+            $fleetFile = FleetFile::find($id);
+            if ($fleetFile) {
+                $filePath =  storage_path('app/public/uploads/' . $fleetFile->file_name);
+                if (Storage::disk('public')->exists($filePath)) {
+                    Storage::disk('public')->delete($filePath);
+                }
+                $fleetFile->delete();
+            }
+            return response()->json(['message' => 'File deleted successfully!'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Failed to delete file!'], 500);
+        }
     }
 }

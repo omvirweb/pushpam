@@ -71,7 +71,7 @@
                                 </select>
                             </div>
                         </div>
-                        <button type="submit" id="submit-btn" class="btn btn-success">Display Fleet Data</button>
+                        <button type="submit" id="submit-btn" class="btn btn-success">Generate Report</button>
                     </form>
 
                 </div>
@@ -89,7 +89,8 @@
                                 @if ($fileData)
                                 @php
                                 // Extract the first key (e.g., "Godown Wise Item Summary") and retrieve the data
-                                $tableName = array_key_first($fileData);
+                                $keys = array_keys($fileData);
+                                $tableName = isset($keys[1]) ? $keys[1] : null;
                                 $entries = $fileData[$tableName]; // Array of item entries
                                 @endphp
 

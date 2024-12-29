@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DataTables\FleetFileDataTable;
 use App\Models\FileColumn;
 use App\Models\FileRow;
 use App\Models\File;
@@ -17,11 +18,11 @@ use Log;
 
 class FleetController extends Controller
 {
-    public function index()
+    public function index(FleetFileDataTable $dataTable)
     {
         $types = Type::get();
         // dd($types);
-        return view('fleet.upload', compact('types'));
+        return $dataTable->render('fleet.upload', compact('types'));
     }
 
     public function upload(Request $request)
@@ -68,7 +69,6 @@ class FleetController extends Controller
                 'type' => $request->type,
             ]);
             return back()->with('success', 'File uploaded and data saved successfully!');
-
         }
 
         // If upload failed, return an error response
@@ -77,5 +77,4 @@ class FleetController extends Controller
             'message' => 'File upload failed. Please try again.'
         ]);
     }
-
 }
