@@ -55,7 +55,7 @@ class UploadJsonFiles extends Command
                             $company = Company::where('code', $companyCode)->first();
                             if ($company) {
                                 $company->update([
-                                    'name' => $$companyName,
+                                    'name' => $companyName,
                                     'address' => $companyAddress,
                                 ]);
                                 $this->info("Company updated: $companyCode");
@@ -76,7 +76,6 @@ class UploadJsonFiles extends Command
                     }
                 }
 
-                $companyDetails = isset($keys[0]) ? $keys[0] : null;
                 $type = isset($keys[1]) ? $keys[1] : null;
                 $fileName = time() . '_' . basename($file);
                 if ($type) {
