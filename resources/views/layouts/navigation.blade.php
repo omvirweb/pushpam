@@ -33,6 +33,9 @@
                     <x-nav-link :href="route('companies.index')">
                         {{ __('Company Master') }}
                     </x-nav-link>&emsp;
+                    <x-nav-link :href="route('users.index')">
+                        {{ __('User Master') }}
+                    </x-nav-link>&emsp;
                     <!-- <x-nav-link :href="route('item.create')">
                         {{ __('Item') }}
                     </x-nav-link>&emsp; -->

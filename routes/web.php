@@ -18,6 +18,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\FleetController;
 use App\Http\Controllers\FleetReportController;
 use App\Http\Controllers\FleetDataController;
+use App\Http\Controllers\UserController as AdminUserController;
 
 Route::resource('permissions', App\Http\Controllers\PermissionController::class);
 
@@ -170,6 +171,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dana/data', [DanaController::class, 'getData'])->name('dana.data');
 
     Route::resource('companies', CompanyController::class);
+    Route::resource('users', AdminUserController::class);
 });
 
 

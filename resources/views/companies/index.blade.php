@@ -31,11 +31,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3>Company Master
-                        <a data-bs-toggle="modal" data-bs-target="#companyModal" class="btn btn-sm btn-icon btn-3 btn-primary mb-0 float-right">
-                            <i class="fa fa-plus me-2"></i> Add
-                        </a>
-                    </h3>
+                    <h3>Company Master</h3>
                 </div>
                 <div class="card-body">
                     <div class="container-fluid py-2">
