@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <label for="company">Select Company:<span class="text-danger required-asterisk">*</span></label>
-                                <select name="type" id="company" class="form-control">
+                                <select name="company" id="company" class="form-control">
                                     <option value="">Select Company</option>
                                     @foreach ($companies as $company)
                                     <option value="{{ $company->id }}" {{ old('company', $selectedCompany ?? '') == $company->id ? 'selected' : '' }}>
@@ -91,14 +91,9 @@
                                 $tableName = isset($keys[1]) ? $keys[1] : null;
                                 $entries = $fileData[$tableName];
                                 @endphp
-                                @endif
-
-                                @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
-                                @if ($fileData)
                                 <h4 class="text-center mt-4">{{ $tableName }}</h4>
-                                <!-- Display the table name -->
-
                                 @if (!empty($entries))
+                                @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
                                 <table class="custom-datatable align-items-center mb-0 table-bordered table-hover  dt-responsive">
                                     <thead class="table-active">
                                         <tr>
@@ -133,17 +128,7 @@
                                         <!-- Initial rows will be injected here via AJAX -->
                                     </tbody>
                                 </table>
-                                @else
-                                {{-- <p class="text-center p-4">No data available for the selected file.</p> --}}
-                                @endif
-                                @else
-                                {{-- <p class="text-center p-4">No data available for the selected file.</p> --}}
-                                @endif
-                                @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre' || $selectedType == 2)
-                                @if ($fileData)
-                                <h4 class="text-center mt-4">{{ $tableName }}</h4>
-
-                                @if (!empty($entries))
+                                @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre Details' || $selectedType == 2)
                                 <table class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
                                     <thead class="table-active">
                                         <tr>
@@ -183,23 +168,10 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
-                                @elseif ($selectedType == 'Stock Item Wise Vendor' || $selectedType == 1)
-                                @if ($fileData)
+                                @elseif ($selectedType == 'Stock Item Wise Vendor List' || $selectedType == 1)
                                 @php
-                                $rootKey = array_key_first($fileData);
-                                $dynamicData = $fileData[$rootKey] ?? [];
-                                $keys = array_keys($dynamicData[0] ?? []);
+                                $keys = array_keys($entries[0] ?? []);
                                 @endphp
-
-                                <h4 class="text-center mt-4">{{ $rootKey }}</h4>
-
-                                @if (count($dynamicData) > 0)
                                 <table class="custom-datatable align-items-center mb-0 table-bordered table-hover">
                                     <thead class="table-active">
                                         <tr>
@@ -229,7 +201,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($dynamicData as $index => $entry)
+                                        @foreach ($entries as $index => $entry)
                                         <tr>
                                             @foreach ($keys as $key)
                                             <td class=" text-wrap">
@@ -305,19 +277,7 @@
                                         @endforeach
                                     </tbody>
                                 </table>
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
                                 @elseif ($selectedType == 'TOP Consumable Report' || $selectedType == 7)
-                                @if ($fileData)
-
-                                <h4 class="text-center mt-4">{{ $tableName }}</h4>
-                                <!-- Display the table name -->
-
-                                @if (!empty($entries))
                                 <table class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
                                     <thead class="table-active">
                                         <tr>
@@ -363,18 +323,103 @@
                                         @endforeach
                                     </tbody>
                                 </table>
+                                @elseif ($selectedType == 'Fleet Details' || $selectedType == 5)
+                                <table class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
+                                    <thead class="table-active">
+                                        <tr>
+                                            <!-- Static Columns -->
+                                            <th class="">S.No.</th>
+                                            <th class="">Door No</th>
+                                            <th class="">Status(Active/Inactive)</th>
+                                            <th class="">Invoice No.</th>
+                                            <th class="">Name of Owner</th>
+                                            <th class="">Cost Center(Location)</th>
+                                            <th class="">Section</th>
+                                            <th class="">Date of Delivery</th>
+                                            <th class="">Capacity</th>
+                                            <th class="">Regd. Date</th>
+                                            <th class="">Regd. State</th>
+                                            <th class="">Regd. RTO</th>
+                                            <th class="">Regd.No.</th>
+                                            <th class="">Engine No.</th>
+                                            <th class="">Chasis No.</th>
+                                            <th class="">Road Tax From</th>
+                                            <th class="">Road Tax To</th>
+                                            <th class="">Fitness From</th>
+                                            <th class="">Fitness To</th>
+                                            <th class="">Permit for State</th>
+                                            <th class="">Permit From</th>
+                                            <th class="">Permit To</th>
+                                            <th class="">PESO From</th>
+                                            <th class="">PESO To</th>
+                                            <th class="">Calibration From</th>
+                                            <th class="">Calibration To</th>
+                                            <th class="">Remarks</th>
+                                            <th class="">Name of Financer</th>
+                                            <th class="">Agreement Number</th>
+                                            <th class="">Loan Amount</th>
+                                            <th class="">Tenure</th>
+                                            <th class="">EMI Start Date</th>
+                                            <th class="">EMI End Date</th>
+                                            <th class="">EMI Amount</th>
+                                            <th class="">Insured By</th>
+                                            <th class="">Insurance Policy No.</th>
+                                            <th class="">Insurance IDV</th>
+                                            <th class="">Insurance From</th>
+                                            <th class="">Insurance To</th>
+                                            <th class="">PUC From</th>
+                                            <th class="">PUC To</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($entries as $entry)
+                                        <tr>
+                                            <td class="text-wrap">{{ $entry['S.No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Door No'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Vehicle Status'][0] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Invoice No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Name of Owner'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Cost Center'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Section'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Date of Delivery'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Loading Capacity'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Regd. Date'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Regd. State'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Regd. RTO'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Regd.No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Engine No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Chasis No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Road Tax From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Road Tax To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Fitness From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Fitness To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Permit for State'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Permit From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Permit To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['PESO From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['PESO To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Calibration From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Calibration To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Remarks'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Name of Financer'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Agreement Number'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Loan Amount'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Tenure'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['EMI Start Date'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['EMI End Date'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['EMI Amount'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Insured By'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Insurance Policy No.'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Insurance IDV'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Insurance From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['Insurance To'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['PUC From'] ?? '' }}</td>
+                                            <td class="text-wrap">{{ $entry['PUC To'] ?? '' }}</td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
                                 @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
-                                @endif
-                                @else
-                                @if ($fileData)
-                                <h4 class="text-center mt-4">{{ $tableName }}</h4>
-                                <!-- Display the table name -->
-
-                                @if (!empty($entries))
                                 <table class="custom-datatable align-items-center mb-0 table-bordered table-hover ">
                                     <thead class="table-active">
                                         <tr>
@@ -414,16 +459,13 @@
                                     </tbody>
 
                                 </table>
-                                @else
-                                <p class=" p-4">No data available for the selected file.</p>
                                 @endif
                                 @else
                                 <p class=" p-4">No data available for the selected file.</p>
                                 @endif
-
-
+                                @else
+                                <p class=" p-4">No data available for the selected file.</p>
                                 @endif
-
                             </div>
                         </div>
                     </div>
@@ -511,6 +553,8 @@
         const fileTypeDropdown = document.getElementById('file_type');
         const companyDropdown = document.getElementById('company');
         const fileDropdown = document.getElementById('listdata');
+        const submitButton = document.getElementById('submit-btn');
+        let selectedFileId = "{{ $listdata }}";
 
         const fetchFiles = () => {
             const selectedType = fileTypeDropdown.value;
@@ -518,6 +562,7 @@
 
             fileDropdown.innerHTML = '<option value="">Select File</option>';
             fileDropdown.disabled = true;
+            submitButton.disabled = true;
 
             if (selectedType || selectedCompany) {
                 fetch('{{ route("fleet.getFiles") }}', {
@@ -540,7 +585,12 @@
                                 option.textContent = file.file_name;
                                 fileDropdown.appendChild(option);
                             });
+                            if (selectedFileId != null) {
+                                fileDropdown.value = selectedFileId;
+                                selectedFileId = null;
+                            }
                             fileDropdown.disabled = false;
+                            submitButton.disabled = false;
                         }
                     })
                     .catch(error => console.error('Error fetching files:', error));
@@ -548,6 +598,7 @@
         };
         fileTypeDropdown.addEventListener('change', fetchFiles);
         companyDropdown.addEventListener('change', fetchFiles);
+        fetchFiles();
     });
 
 </script>

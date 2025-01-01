@@ -71,7 +71,8 @@ class FleetController extends Controller
                     }
                 }
             }
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = date('d_m_y_h_i_A') . '_' . $file->getClientOriginalName();
+
             $filePath = $file->storeAs('uploads', $fileName, 'public');
             $fileModel = FleetFile::create([
                 'file_name' => $fileName,
@@ -84,7 +85,7 @@ class FleetController extends Controller
 
         if ($request->hasFile('file')) {
             $file = $request->file('file');
-            $fileName = time() . '_' . $file->getClientOriginalName();
+            $fileName = date('d_m_y_h_i_A') . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('uploads', $fileName, 'public');
 
             // Parse the JSON file

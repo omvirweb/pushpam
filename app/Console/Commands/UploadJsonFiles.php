@@ -7,6 +7,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FleetFile;
 use App\Models\Type;
+use Illuminate\Support\Facades\File;
 
 class UploadJsonFiles extends Command
 {
@@ -16,7 +17,8 @@ class UploadJsonFiles extends Command
     public function handle()
     {
         $sourceDir = '/home/ftpuserpushpam/ftp';
-        $processedDirBase = $sourceDir . DIRECTORY_SEPARATOR . 'uploaded';
+        // $processedDirBase = $sourceDir . DIRECTORY_SEPARATOR . 'uploaded';
+        $processedDirBase = '/home/ftpuserpushpam/uploaded';
         $batchDirName = date('Y-m-d_H-i-s');
         $processedDir = $processedDirBase . DIRECTORY_SEPARATOR . $batchDirName;
 
@@ -77,7 +79,7 @@ class UploadJsonFiles extends Command
                 }
 
                 $type = isset($keys[1]) ? $keys[1] : null;
-                $fileName = time() . '_' . basename($file);
+                $fileName = date('d_m_y_h_i_A') . '_' . basename($file);
                 if ($type) {
                     $typeData = Type::where('name', $type)->first();
                     if ($typeData) {
@@ -94,10 +96,39 @@ class UploadJsonFiles extends Command
                     $this->error("Type key not found after 'Company Details' in file: $file");
                 }
 
-                $this->info("File uploaded and database updated: $fileName");
+                // $this->info("File uploaded and database updated: $fileName");
+                // $directory = '/home/ftpuserpushpam/ftp/uploaded/' . date('Y-m-d_H-i-s');
+                // $executingUser = trim(shell_exec('whoami'));
+                // $this->info("Executing user: $executingUser");
+                // $this->info("Directory permissions: " . substr(sprintf('%o', fileperms('/home/ftpuserpushpam/ftp/uploaded')), -4));
+
+                // if (!is_dir($processedDir)) {
+                //     $this->info("Attempting to create directory: $processedDir");
+                //     umask(002);
+                //     $created = mkdir($processedDir, 0755, true);
+                //     if (!$created) {
+                //         $this->error("Failed to create directory: $processedDir");
+                //         $this->error("Current permissions: " . substr(sprintf('%o', fileperms($processedDirBase)), -4));
+                //     }
+                // }
+
+                // try {
+                //     if (!is_writable(dirname($processedDir))) {
+                //         throw new \Exception("Parent directory is not writable: " . dirname($processedDir));
+                //     }
+                //     mkdir($processedDir, 0755, true);
+                //     $this->info("Successfully created directory: $processedDir");
+                // } catch (\Exception $e) {
+                //     $this->error("Failed to create directory: {$e->getMessage()}");
+                // }
+
+
                 if (!is_dir($processedDir)) {
                     mkdir($processedDir, 0755, true);
                 }
+                // if (!File::exists($processedDir)) {
+                //     File::makeDirectory($processedDir, 0755, true);
+                // }
                 rename($file, "$processedDir/" . basename($file));
                 $this->info("Moved file to: $processedDir");
             } catch (\Exception $e) {

@@ -59,9 +59,16 @@ class FleetReportController extends Controller
         $selectedFileId = $request->get('listdata');
         $selectedType = $request->get('type');
         $selectedCompany = $request->get('company');
-        $filesList = FleetFile::where('type', $selectedType)->when($selectedCompany, function ($query) use ($selectedCompany) {
-            $query->where('company_id', $selectedCompany);
-        })->get();
+        if ($user->id == 1) {
+            $filesList = FleetFile::where('type', $selectedType)->when($selectedCompany, function ($query) use ($selectedCompany) {
+                $query->where('company_id', $selectedCompany);
+            })->get();
+        } else {
+            $companyIds = $user->companies()->pluck('companies.id');
+            $filesList = FleetFile::where('type', $selectedType)->whereIn('company_id', $companyIds)->when($selectedCompany, function ($query) use ($selectedCompany) {
+                $query->where('company_id', $selectedCompany);
+            })->get();
+        }
 
         // Initialize file data as null initially
         $fileData = null;
@@ -75,7 +82,7 @@ class FleetReportController extends Controller
                 if (file_exists($filePath)) {
                     $fileContent = file_get_contents($filePath);
                     $fileData = json_decode($fileContent, true);
-
+                    $selectedType = $selectedFile->type;
                     if (json_last_error() !== JSON_ERROR_NONE) {
                         return back()->with('error', 'Invalid JSON format in the selected file.');
                     }
@@ -133,6 +140,7 @@ class FleetReportController extends Controller
 
     public function getFiles(Request $request)
     {
+        $user = auth()->user();
         $type = $request->get('type');
         $company = $request->get('company');
         $query = FleetFile::query();
@@ -142,7 +150,10 @@ class FleetReportController extends Controller
         if ($company) {
             $query->where('company_id', $company);
         }
-
+        if ($user->id != 1) {
+            $companyIds = $user->companies()->pluck('companies.id');
+            $query->whereIn('company_id', $companyIds);
+        }
         $files = $query->get(['id', 'file_name']);
 
         return response()->json($files);
