@@ -21,21 +21,30 @@
                     <!-- <x-nav-link :href="route('account.create')">
                         {{ __('Account') }}
                     </x-nav-link>&emsp; -->
-                    <x-nav-link :href="route('fleet.uploadForm')">
+                    {{-- <x-nav-link :href="route('fleet.uploadForm')">
                         {{ __('Upload Json') }}
-                    </x-nav-link>&emsp;
+                    </x-nav-link>&emsp; --}}
                     <x-nav-link :href="route('fleet.reportForm')">
                         {{ __('Generate Report Excel') }}
                     </x-nav-link>&emsp;
                     <x-nav-link :href="route('fleet.reportScreen')">
                         {{ __('Generate Report Screen') }}
                     </x-nav-link>&emsp;
-                    <x-nav-link :href="route('companies.index')">
+                    <!-- <x-nav-link :href="route('companies.index')">
                         {{ __('Company Master') }}
                     </x-nav-link>&emsp;
                     <x-nav-link :href="route('users.index')">
                         {{ __('User Master') }}
-                    </x-nav-link>&emsp;
+                    </x-nav-link>&emsp; -->
+                    @if(Auth::check() && Auth::user()->usertype == 1)
+                        <x-nav-link :href="route('companies.index')">
+                            {{ __('Company Master') }}
+                        </x-nav-link>&emsp;
+                        <x-nav-link :href="route('users.index')">
+                            {{ __('User Master') }}
+                        </x-nav-link>&emsp;
+                    @endif
+
                     <!-- <x-nav-link :href="route('item.create')">
                         {{ __('Item') }}
                     </x-nav-link>&emsp; -->

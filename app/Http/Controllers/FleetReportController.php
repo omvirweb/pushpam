@@ -60,14 +60,21 @@ class FleetReportController extends Controller
         $selectedType = $request->get('type');
         $selectedCompany = $request->get('company');
         if ($user->id == 1) {
-            $filesList = FleetFile::where('type', $selectedType)->when($selectedCompany, function ($query) use ($selectedCompany) {
-                $query->where('company_id', $selectedCompany);
-            })->get();
+            $filesList = FleetFile::where('type', $selectedType)
+                ->when($selectedCompany, function ($query) use ($selectedCompany) {
+                    $query->where('company_id', $selectedCompany);
+                })
+                ->latest() // Fetch the latest file
+                ->first(); // Get only one record
         } else {
             $companyIds = $user->companies()->pluck('companies.id');
-            $filesList = FleetFile::where('type', $selectedType)->whereIn('company_id', $companyIds)->when($selectedCompany, function ($query) use ($selectedCompany) {
-                $query->where('company_id', $selectedCompany);
-            })->get();
+            $filesList = FleetFile::where('type', $selectedType)
+                ->whereIn('company_id', $companyIds)
+                ->when($selectedCompany, function ($query) use ($selectedCompany) {
+                    $query->where('company_id', $selectedCompany);
+                })
+                ->latest() // Fetch the latest file
+                ->first(); // Get only one record
         }
 
         // Initialize file data as null initially
@@ -144,6 +151,7 @@ class FleetReportController extends Controller
         $type = $request->get('type');
         $company = $request->get('company');
         $query = FleetFile::query();
+    
         if ($type) {
             $query->where('type', $type);
         }
@@ -154,17 +162,20 @@ class FleetReportController extends Controller
             $companyIds = $user->companies()->pluck('companies.id');
             $query->whereIn('company_id', $companyIds);
         }
-        $files = $query->get(['id', 'file_name']);
-
-        return response()->json($files);
+    
+        $latestFile = $query->latest()->first(['id', 'file_name']); // Get only the latest file
+    
+        return response()->json($latestFile); // Return only the latest file
     }
+    
+
 
     public function deleteFleetFile($id)
     {
         try {
             $fleetFile = FleetFile::find($id);
             if ($fleetFile) {
-                $filePath =  storage_path('app/public/uploads/' . $fleetFile->file_name);
+                $filePath = storage_path('app/public/uploads/' . $fleetFile->file_name);
                 if (Storage::disk('public')->exists($filePath)) {
                     Storage::disk('public')->delete($filePath);
                 }
