@@ -9,6 +9,7 @@ use App\Http\Controllers\FineGoldController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionsController;
+use App\Http\Controllers\PasswordController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\UserController;
@@ -38,10 +39,14 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+
 Route::middleware('auth')->group(function () {
     Route::get('/change-password', [UserController::class, 'showChangePasswordForm'])->name('change.password');
     Route::put('/change-password', [UserController::class, 'update'])->name('password.update');
+    //Route::put('/change-password', [UserController::class, 'update'])->name('password.update');
 });
+
+
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -179,8 +184,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/fleet/report', [FleetReportController::class, 'index'])->name('fleet.reportForm');
     Route::post('/fleet/generate-report', [FleetReportController::class, 'generateReport'])->name('fleet.generateReport');
     Route::get('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen');
+    Route::get('/fleet-data', [FleetReportController::class, 'loadMoreData'])->name('fleetdata.loadMore');
+
     Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
     Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
+    Route::get('fleet/data', [FleetReportController::class, 'getFleetData'])->name('fleet.data');
     Route::post('/get-files', [FleetReportController::class, 'getFiles'])->name('fleet.getFiles');
     Route::delete('/delete-fleet-file/{id}', [FleetReportController::class, 'deleteFleetFile'])->name('fleetfile.destroy');
 

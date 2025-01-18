@@ -18,7 +18,7 @@
         </div>
     @endif
 
-    <div class="card">
+    <!-- <div class="card">
         <div class="card-header">
             Change Password
         </div>
@@ -67,12 +67,11 @@
             </form>
             <div id="response-message" class="mt-3"></div>
         </div>
-    </div>
+    </div> -->
 </div>
 @endsection
-
 @push('scripts')
-<script>
+<!-- <script>
 $(document).ready(function() {
     $('#change-password-form').on('submit', function(event) {
         event.preventDefault(); // Prevent the default form submission
@@ -110,7 +109,7 @@ $(document).ready(function() {
     });
 });
 
-</script>
+</script> -->
 @endpush --}}
 
 @extends('layouts.app')
@@ -139,14 +138,12 @@ $(document).ready(function() {
     }
 </style>
 <div class="container">
-
     <!-- Success Message -->
     @if (session('status'))
         <div class="alert alert-success auto-hide" id="success-alert">
             {{ session('status') }}
         </div>
     @endif
-
     <!-- Error Messages -->
     @if ($errors->any())
         <div class="alert alert-danger">
@@ -163,7 +160,8 @@ $(document).ready(function() {
             Change Password
         </div>
         <div class="card-body">
-            <form method="POST" action="{{ route('password.update') }}">
+            <!-- <form id="change-password-form" method="POST" action="{{ route('password.update') }}"> -->
+            <form id="change-password-form" method="POST">
                 @csrf
                 @method('PUT')
 
@@ -222,20 +220,65 @@ $(document).ready(function() {
                         required
                         autocomplete="new-password"
                     >
-                    @if ($errors->has('password_confirmation'))
+                    <!-- @if ($errors->has('password_confirmation'))
                     <span class="help-block">
                         <strong>{{ $errors->first('password_confirmation') }}</strong>
                     </span>
-                @endif
+                    @endif -->
+                    @error('password')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
 
                 <button type="submit" class="btn btn-primary">Change Password</button>
             </form>
+            <div id="response-message" class="mt-3"></div>
         </div>
     </div>
 </div>
 @endsection
 @push('scripts')
 <script>
+$(function() {
+    $('#change-password-form').on('submit', 'form', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+        // Clear previous response messages
+        $('#response-message').empty();
+        $('#current_password_error').text('');
+        $('#password_error').text('');
+        $('#password_confirmation_error').text('');
+
+        // Get form data
+        var formData = $(this).serialize();
+
+        $.ajax({
+            //url: $(this).attr('action'), // Use the form's action attribute
+            url : "{{ route('password.update') }}",
+            type: 'POST',
+            data: formData,
+            dataType:'json',
+            Accept: 'application/json',
+            success: function(response) {
+                $('#response-message').html('<div class="alert alert-success">' + response.message + '</div>');
+            },
+            error: function(xhr) {
+                var errors = xhr.responseJSON.errors;
+                console.log(errors);
+                if (errors.current_password) {
+                    $('#current_password_error').text(errors.current_password[0]);
+                }
+                if (errors.password) {  
+                    $('#password_error').text(errors.password[0]);
+                }
+                if (errors.password_confirmation) {
+                    $('#password_confirmation_error').text(errors.password_confirmation[0]);
+                }
+            }
+        });
+    });
+});
+
 </script>
 @endpush

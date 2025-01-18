@@ -24,9 +24,9 @@
                     {{-- <x-nav-link :href="route('fleet.uploadForm')">
                         {{ __('Upload Json') }}
                     </x-nav-link>&emsp; --}}
-                    <x-nav-link :href="route('fleet.reportForm')">
+                    <!-- <x-nav-link :href="route('fleet.reportForm')">
                         {{ __('Generate Report Excel') }}
-                    </x-nav-link>&emsp;
+                    </x-nav-link>&emsp; -->
                     <x-nav-link :href="route('fleet.reportScreen')">
                         {{ __('Generate Report Screen') }}
                     </x-nav-link>&emsp;

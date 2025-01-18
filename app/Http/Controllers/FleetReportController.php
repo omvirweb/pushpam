@@ -56,16 +56,40 @@ class FleetReportController extends Controller
     public function displayAllFleetData(Request $request)
     {
         $user = auth()->user();
-        $selectedFileId = $request->get('listdata');
         $selectedType = $request->get('type');
         $selectedCompany = $request->get('company');
+    
+        if ($user->id == 1) {
+            $companies = Company::all();
+        } else {
+            $companies = $user->companies;
+        }
+    
+        // Only return the view with initial data
+        return view('all_fleetdata', [
+            'fileTypes' => Type::get(),
+            'companies' => $companies,
+            'selectedType' => $selectedType,
+            'selectedCompany' => $selectedCompany,
+        ]);
+    }
+    
+    public function getFleetData(Request $request)
+    {
+        $user = auth()->user();
+        $selectedType = $request->get('type');
+        $selectedCompany = $request->get('company');
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 50);  // Number of records per load
+    
+        // Get the latest file based on filters
         if ($user->id == 1) {
             $filesList = FleetFile::where('type', $selectedType)
                 ->when($selectedCompany, function ($query) use ($selectedCompany) {
                     $query->where('company_id', $selectedCompany);
                 })
-                ->latest() // Fetch the latest file
-                ->first(); // Get only one record
+                ->latest()
+                ->first();
         } else {
             $companyIds = $user->companies()->pluck('companies.id');
             $filesList = FleetFile::where('type', $selectedType)
@@ -73,48 +97,47 @@ class FleetReportController extends Controller
                 ->when($selectedCompany, function ($query) use ($selectedCompany) {
                     $query->where('company_id', $selectedCompany);
                 })
-                ->latest() // Fetch the latest file
-                ->first(); // Get only one record
+                ->latest()
+                ->first();
         }
-
-        // Initialize file data as null initially
-        $fileData = null;
-
-        // If a file is selected, read its contents
-        if ($selectedFileId) {
-            $selectedFile = FleetFile::find($selectedFileId);
-
-            if ($selectedFile) {
-                $filePath = storage_path('app/public/uploads/' . $selectedFile->file_name);
-                if (file_exists($filePath)) {
-                    $fileContent = file_get_contents($filePath);
-                    $fileData = json_decode($fileContent, true);
-                    $selectedType = $selectedFile->type;
-                    if (json_last_error() !== JSON_ERROR_NONE) {
-                        return back()->with('error', 'Invalid JSON format in the selected file.');
-                    }
-                }
-            }
+    
+        if (!$filesList) {
+            return response()->json([
+                'data' => [],
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0
+            ]);
         }
-
-        if ($user->id == 1) {
-            $companies = Company::all();
-        } else {
-            $companies = $user->companies;
+        $filePath = storage_path('app/public/uploads/' . $filesList->file_name);
+        // dd($filePath);
+        if (!file_exists($filePath)) {
+            return response()->json([
+                'data' => [],
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0
+            ]);
         }
-
-        // Return the basic view
-        return view('all_fleetdata', [
-            'filesList' => $filesList,
-            'fileData' => $fileData,
-            'listdata' => $selectedFileId,
-            'fileTypes' => Type::get(),
-            'companies' => $companies,
-            'selectedType' => $selectedType,
-            'selectedCompany' => $selectedCompany,
+    
+        // Read file content using a generator to save memory
+        $jsonData = function () use ($filePath) {
+            $handle = fopen($filePath, 'r');
+            $content = fread($handle, filesize($filePath));
+            fclose($handle);
+            return json_decode($content, true);
+        };
+    
+        $data = $jsonData();
+        $totalRecords = count($data);
+        
+        // Paginate the data
+        $paginatedData = array_slice($data, $start, $length);
+    
+        return response()->json([
+            'data' => $paginatedData,
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $totalRecords
         ]);
     }
-
     public function loadFleetData(Request $request)
     {
         $selectedFileId = $request->get('fileId');

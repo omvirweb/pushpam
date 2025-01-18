@@ -75,429 +75,17 @@
                                 <h3>Fleet Data</h3>
                             </div>
                             <div class="card-body p-0" style="box-shadow: 0px 5px 10px lightblue;">
-                                <div class="table-responsive">
-                                    @if ($fileData)
-                                        @php
-                                            $keys = array_keys($fileData);
-                                            $tableName = isset($keys[1]) ? $keys[1] : null;
-                                            $entries = $fileData[$tableName];
-                                        @endphp
-                                        <h4 class="text-center mt-4">{{ $tableName }}</h4>
-                                        @if (!empty($entries))
-                                            @if ($selectedType == 'Godown Wise Item Summary' || $selectedType == 4)
-                                                <table
-                                                    class="custom-datatable align-items-center mb-0 table-bordered table-hover  dt-responsive">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            <th class="text-center">S.No.</th>
-                                                            <th class="text-center">Name of Item</th>
-                                                            <th class="text-center">Part No.</th>
-                                                            <th class="text-center">Stock Group</th>
-                                                            <th class="text-center">Stock Category</th>
+                                <div class="table-responsive" id="tableContainer">
 
-                                                            @if (!empty($entries[0]['Godowns']))
-                                                                @foreach ($entries[0]['Godowns'] as $godown)
-                                                                    <th colspan="4" class="text-center">
-                                                                        {{ $godown['Godown Name'] ?? '-' }}</th>
-                                                                @endforeach
-                                                            @endif
-                                                        </tr>
-                                                        <tr>
-                                                            <th></th>
-                                                            <th></th>
-                                                            <th></th>
-                                                            <th></th>
-                                                            <th></th>
-                                                            @foreach ($entries[0]['Godowns'] as $godown)
-                                                                <th class="text-center">Opening</th>
-                                                                <th class="text-center">Inward</th>
-                                                                <th class="text-center">Outward</th>
-                                                                <th class="text-center">Closing</th>
-                                                            @endforeach
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="data-table-body">
-                                                        <!-- Initial rows will be injected here via AJAX -->
-                                                    </tbody>
-                                                </table>
-                                            @elseif ($selectedType == 'Fleet Wise Diesel Parts Oil Tyre Details' || $selectedType == 2)
-                                                <table
-                                                    class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>
-                                                                Location
-                                                            </th>
-                                                            <th style="width:350px!important;">
-                                                                Door No.
-                                                            </th>
-                                                            <th>
-                                                                Total Cost
-                                                            </th>
-                                                            @if (!empty($entries[0]['Category']))
-                                                                @foreach ($entries[0]['Category'] as $category)
-                                                                    <th class="">
-                                                                        {{ $category['Category Name'] }}</th>
-                                                                @endforeach
-                                                            @endif
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $key => $entry)
-                                                            <tr>
-                                                                <td>{{ $key + 1 }}</td>
-                                                                <td class="">{{ $entry['Location'] ?? '-' }}</td>
-                                                                <td class="">{{ $entry['Door No.'] ?? '-' }}
-                                                                </td>
-                                                                <td class=" text-wrap">{{ $entry['Total Cost'] ?? '-' }}
-                                                                </td>
-                                                                <!-- Dynamic Columns for Godowns -->
-                                                                @foreach ($entry['Category'] as $category)
-                                                                    <td class="text-wrap">
-                                                                        {{ $category['Category Amount'] ?? '-' }}</td>
-                                                                @endforeach
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            @elseif ($selectedType == 'Stock Item Wise Vendor List' || $selectedType == 1)
-                                                @php
-                                                    $keys = array_keys($entries[0] ?? []);
-                                                @endphp
-                                                <table
-                                                    class="custom-datatable align-items-center mb-0 table-bordered table-hover">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            {{-- Optionally, you can add a "Sr. No." column if needed --}}
-                                                            {{-- <th class="text-uppercase text-secondary text-xs  opacity-7 ps-2 sr-no-column">
-                                                            Sr. No.
-                                                        </th> --}}
+                                    <table id="fleetDataTable"
+                                        class="custom-datatable align-items-center mb-0 table-bordered table-hover">
+                                        <thead class="table-active">
+                                            <tr>
+                                                {{-- Columns will be generated dynamically via JavaScript --}}
+                                            </tr>
+                                        </thead>
+                                    </table>
 
-                                                            @foreach ($keys as $key)
-                                                                <th
-                                                                    class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                    {{ $key }}
-                                                                </th>
-                                                            @endforeach
-
-                                                            <th
-                                                                class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                Vendor Name
-                                                            </th>
-                                                            <th
-                                                                class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                Supplied Quantity
-                                                            </th>
-                                                            <th
-                                                                class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                Last Supplied Price
-                                                            </th>
-                                                            <th
-                                                                class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                Average Price
-                                                            </th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $index => $entry)
-                                                            <tr>
-                                                                @foreach ($keys as $key)
-                                                                    <td class=" text-wrap">
-                                                                        @if ($key == 'Vendor List')
-                                                                            <!-- Handle Vendor List directly within the same column -->
-                                                                            @if (isset($entry['Vendor List']) && count($entry['Vendor List']) > 0)
-                                                                                <ul>
-                                                                                    @foreach ($entry['Vendor List'] as $vendor)
-                                                                                        <li><strong>Vendor Name:</strong>
-                                                                                            {{ $vendor['Vendor Name'] ?? '-' }}
-                                                                                        </li>
-                                                                                        <li><strong>Supplied
-                                                                                                Quantity:</strong>
-                                                                                            {{ $vendor['Supplied Quantity'] ?? '-' }}
-                                                                                        </li>
-                                                                                        <li><strong>Last Supplied
-                                                                                                Price:</strong>
-                                                                                            {{ $vendor['Last Supplied Price'] ?? '-' }}
-                                                                                        </li>
-                                                                                        <li><strong>Average Price:</strong>
-                                                                                            {{ $vendor['Average Price'] ?? '-' }}
-                                                                                        </li>
-                                                                                    @endforeach
-                                                                                </ul>
-                                                                            @else
-                                                                                <span>-</span>
-                                                                            @endif
-                                                                        @else
-                                                                            <!-- Display other data fields or a dash if data is missing -->
-                                                                            {{ $entry[$key] ?? '-' }}
-                                                                        @endif
-                                                                    </td>
-                                                                @endforeach
-
-                                                                <!-- Vendor-specific columns (these should be displayed for each entry) -->
-                                                                <td class="text-wrap">
-                                                                    @if (isset($entry['Vendor List']) && count($entry['Vendor List']) > 0)
-                                                                        @foreach ($entry['Vendor List'] as $vendor)
-                                                                            {{ $vendor['Vendor Name'] ?? '-' }}
-                                                                        @endforeach
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </td>
-                                                                <td>
-                                                                    @if (isset($entry['Vendor List']) && count($entry['Vendor List']) > 0)
-                                                                        @foreach ($entry['Vendor List'] as $vendor)
-                                                                            {{ $vendor['Supplied Quantity'] ?? '-' }}
-                                                                        @endforeach
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </td>
-                                                                <td>
-                                                                    @if (isset($entry['Vendor List']) && count($entry['Vendor List']) > 0)
-                                                                        @foreach ($entry['Vendor List'] as $vendor)
-                                                                            {{ $vendor['Last Supplied Price'] ?? '-' }}
-                                                                        @endforeach
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </td>
-                                                                <td>
-                                                                    @if (isset($entry['Vendor List']) && count($entry['Vendor List']) > 0)
-                                                                        @foreach ($entry['Vendor List'] as $vendor)
-                                                                            {{ $vendor['Average Price'] ?? '-' }}
-                                                                        @endforeach
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            @elseif ($selectedType == 'TOP Consumable Report' || $selectedType == 7)
-                                                <table
-                                                    class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            <!-- Static Columns -->
-                                                            <th class="">S.No.</th>
-                                                            <th class="">Name of Item</th>
-                                                            <th class="">Part No.</th>
-                                                            <th class="">Stock Group</th>
-                                                            <th class="">Stock Category</th>
-                                                            <th class="">Total Consumed Qty</th>
-
-                                                            <!-- Dynamic Columns for Godowns -->
-                                                            @if (!empty($entries[0]['Godown']))
-                                                                @foreach ($entries[0]['Godown'] as $godown)
-                                                                    <th class="">
-                                                                        {{ $godown['Godown Name'] }}</th>
-                                                                @endforeach
-                                                            @endif
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $entry)
-                                                            <tr>
-                                                                <!-- Static Columns -->
-                                                                <td class="">{{ $entry['S.No.'] ?? '-' }}</td>
-                                                                <td class=" text-wrap">{{ $entry['Name of Item'] ?? '-' }}
-                                                                </td>
-                                                                <td class="">{{ $entry['Part No.'] ?? '-' }}
-                                                                </td>
-                                                                <td class=" text-wrap">{{ $entry['Stock Group'] ?? '-' }}
-                                                                </td>
-                                                                <td class=" text-wrap">
-                                                                    {{ $entry['Stock Category'] ?? '-' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Total Consumed Qty'] ?? '-' }}</td>
-
-                                                                <!-- Dynamic Columns for Godowns -->
-                                                                @foreach ($entry['Godown'] as $godown)
-                                                                    <td class="text-wrap">
-                                                                        {{ $godown['Qunatity'] ?? '-' }}</td>
-                                                                @endforeach
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            @elseif ($selectedType == 'Fleet Details' || $selectedType == 5)
-                                                <table
-                                                    class=" align-items-center mb-0 table-bordered table-hover custom-datatable dt-responsive">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            <!-- Static Columns -->
-                                                            <th class="">S.No.</th>
-                                                            <th class="">Door No</th>
-                                                            <th class="">Status(Active/Inactive)</th>
-                                                            <th class="">Invoice No.</th>
-                                                            <th class="">Name of Owner</th>
-                                                            <th class="">Cost Center(Location)</th>
-                                                            <th class="">Section</th>
-                                                            <th class="">Date of Delivery</th>
-                                                            <th class="">Capacity</th>
-                                                            <th class="">Regd. Date</th>
-                                                            <th class="">Regd. State</th>
-                                                            <th class="">Regd. RTO</th>
-                                                            <th class="">Regd.No.</th>
-                                                            <th class="">Engine No.</th>
-                                                            <th class="">Chasis No.</th>
-                                                            <th class="">Road Tax From</th>
-                                                            <th class="">Road Tax To</th>
-                                                            <th class="">Fitness From</th>
-                                                            <th class="">Fitness To</th>
-                                                            <th class="">Permit for State</th>
-                                                            <th class="">Permit From</th>
-                                                            <th class="">Permit To</th>
-                                                            <th class="">PESO From</th>
-                                                            <th class="">PESO To</th>
-                                                            <th class="">Calibration From</th>
-                                                            <th class="">Calibration To</th>
-                                                            <th class="">Remarks</th>
-                                                            <th class="">Name of Financer</th>
-                                                            <th class="">Agreement Number</th>
-                                                            <th class="">Loan Amount</th>
-                                                            <th class="">Tenure</th>
-                                                            <th class="">EMI Start Date</th>
-                                                            <th class="">EMI End Date</th>
-                                                            <th class="">EMI Amount</th>
-                                                            <th class="">Insured By</th>
-                                                            <th class="">Insurance Policy No.</th>
-                                                            <th class="">Insurance IDV</th>
-                                                            <th class="">Insurance From</th>
-                                                            <th class="">Insurance To</th>
-                                                            <th class="">PUC From</th>
-                                                            <th class="">PUC To</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $entry)
-                                                            <tr>
-                                                                <td class="text-wrap">{{ $entry['S.No.'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Door No'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Vehicle Status'][0] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Invoice No.'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Name of Owner'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Cost Center'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Section'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Date of Delivery'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Loading Capacity'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Regd. Date'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Regd. State'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Regd. RTO'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Regd.No.'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Engine No.'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Chasis No.'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Road Tax From'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Road Tax To'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Fitness From'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Fitness To'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Permit for State'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Permit From'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Permit To'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['PESO From'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['PESO To'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Calibration From'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Calibration To'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Remarks'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Name of Financer'] ?? '' }}</td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Agreement Number'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Loan Amount'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Tenure'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['EMI Start Date'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['EMI End Date'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['EMI Amount'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Insured By'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">
-                                                                    {{ $entry['Insurance Policy No.'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['Insurance IDV'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Insurance From'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['Insurance To'] ?? '' }}
-                                                                </td>
-                                                                <td class="text-wrap">{{ $entry['PUC From'] ?? '' }}</td>
-                                                                <td class="text-wrap">{{ $entry['PUC To'] ?? '' }}</td>
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            @else
-                                                <table
-                                                    class="custom-datatable align-items-center mb-0 table-bordered table-hover ">
-                                                    <thead class="table-active">
-                                                        <tr>
-                                                            @php
-                                                                // Get keys for the first entry to use as column headers
-                                                                $keys = array_keys($entries[0] ?? []);
-                                                            @endphp
-                                                            @foreach ($keys as $key)
-                                                                <th
-                                                                    class="text-uppercase text-secondary text-xs  opacity-7 ps-2">
-                                                                    {{ $key }}
-                                                                </th>
-                                                            @endforeach
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach ($entries as $entry)
-                                                            <tr>
-                                                                @foreach ($keys as $key)
-                                                                    <td class=" text-wrap">
-                                                                        @php
-                                                                            $value = $entry[$key] ?? '-';
-                                                                            if (is_array($value)) {
-                                                                                $value = array_map(function ($v) {
-                                                                                    if (is_bool($v)) {
-                                                                                        return $v ? 'true' : 'false';
-                                                                                    }
-                                                                                    return $v;
-                                                                                }, $value);
-                                                                                $value = implode(', ', $value);
-                                                                            }
-                                                                        @endphp
-                                                                        {{ $value }}
-                                                                    </td>
-                                                                @endforeach
-                                                            </tr>
-                                                        @endforeach
-                                                    </tbody>
-
-                                                </table>
-                                            @endif
-                                        @else
-                                            <p class=" p-4">No data available for the selected file.</p>
-                                        @endif
-                                    @else
-                                        <p class=" p-4">No data available for the selected file.</p>
-                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -510,122 +98,583 @@
 @push('script')
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <script src="https://cdn.datatables.net/scroller/2.4.3/js/dataTables.scroller.min.js"></script>
-
     <script>
-        let page = 1; // Current page
-        const fileId = "{{ $listdata }}";
-        let table;
-
         $(document).ready(function() {
-            // Initialize the DataTable once
-            table = $('.custom-datatable').DataTable({
-                scroller: true,
-                deferRender: true,
-                scrollY: 600,
+            let firstLoad = true;
+            let columns = [];
+
+            const table = $('#fleetDataTable').DataTable({
+                serverSide: true,
+                processing: true,
+                searching: false,
+                ordering: false,
                 autoWidth: false,
-                responsive: false, // Disable responsive
-            });
-
-            $(window).scroll(function() {
-                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-                    page++; // Increment page number
-                    loadMoreData();
-                }
-            });
-
-            loadMoreData(); // Load initial data
-        });
-
-        function loadMoreData() {
-            $.ajax({
-                url: "{{ route('loadFleetData') }}",
-                method: 'GET',
-                data: {
-                    fileId: fileId,
-                    page: page,
+                responsive: true,
+                scrollCollapse: true,
+                scroller: {
+                    loadingIndicator: true,
+                    displayBuffer: 10
                 },
-                success: function(data) {
-                    console.log(data);
-                    if (data.length > 0) {
-                        // Clear existing rows before adding new ones
-                        let rows = [];
-                        data.forEach(function(item) {
-                            let row = `<tr>
-                        <td class="">${item['S.No.'] ?? '-'}</td>
-                        <td class="">${item['Name of Item'] ?? '-'}</td>
-                        <td class="text-end">${item['Part No.'] ?? '-'}</td>
-                        <td class="">${item['Stock Group'] ?? '-'}</td>
-                        <td class="">${item['Stock Category'] ?? '-'}</td>`;
+                ajax: {
+                    url: "{{ route('fleet.data') }}",
+                    data: function(d) {
+                        d.type = "{{ $selectedType }}";
+                        d.company = "{{ $selectedCompany }}";
+                    },
+                    dataFilter: function(data) {
+                        let json = JSON.parse(data);
+                        
+                        let tableData = json.data["Material Out Register"] ||
+                            json.data["Fleet Wise Trip - Diesel - KMS - Hours"] || json.data[
+                                "Stock Item Wise Vendor List"] || json.data[
+                                "Fleet Details"] || json.data[
+                                "TOP Consumable Report"] || json.data[
+                                "Fleet Wise Diesel Parts Oil Tyre Details"] ||
+                            json.data["Godown Wise Item Summary"] || [];
+                        console.log(tableData);
+                        if (tableData && tableData.length > 0) {
+                            let columns = [];
 
-                            item['Godowns'].forEach(function(godown) {
-                                row += `
-                        <td class="text-end">${godown['Opening Balance'] ?? '-'}</td>
-                        <td class="text-end">${godown['Inward Quantity'] ?? '-'}</td>
-                        <td class="text-end">${godown['Outward Quantity'] ?? '-'}</td>
-                        <td class="text-end">${godown['Closing Balance'] ?? '-'}</td>
-                        `;
-                            });
-
-                            row += `</tr>`;
-                            rows.push($(row)[0]); // Push the row element to an array
-                        });
-
-                        // Add the new rows to the DataTable
-                        table.rows.add(rows); // Add rows to the table
-                        table.draw(); // Redraw the table to reflect changes
-                    }
-                },
-                error: function() {
-                    console.log('Error loading data');
+                            if (json.data["Godown Wise Item Summary"]) {
+    let allGodowns = new Set();
+    tableData.forEach(row => {
+        if (row.Godowns) {
+            row.Godowns.forEach(godown => {
+                if (godown['Godown Name']) {
+                    allGodowns.add(godown['Godown Name']);
                 }
             });
         }
+    });
 
-        document.addEventListener("DOMContentLoaded", function() {
-            const fileTypeDropdown = document.getElementById('file_type');
-            const companyDropdown = document.getElementById('company');
-            // const fileDropdown = document.getElementById('listdata');
-            const submitButton = document.getElementById('submit-btn');
-            let selectedFileId = "{{ $listdata }}";
-            submitButton.disabled = true;
+    let uniqueGodowns = Array.from(allGodowns);
+    
+    // Create table HTML structure
+    let tableHTML = `
+        <table id="dataTable" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th rowspan="2">S.No.</th>
+                    <th rowspan="2">Name of Item</th>
+                    <th rowspan="2">Part No.</th>
+                    <th rowspan="2">Stock Group</th>
+                    <th rowspan="2">Stock Category</th>
+    `;
+    
+    // Add godown header groups
+    uniqueGodowns.forEach(godownName => {
+        tableHTML += `<th colspan="4" class="text-center">${godownName}</th>`;
+    });
+    
+    tableHTML += `</tr><tr>`;
+    
+    // Add subheaders for each godown
+    uniqueGodowns.forEach(() => {
+        tableHTML += `
+            <th class="text-center">Opening</th>
+            <th class="text-center">Inward</th>
+            <th class="text-center">Outward</th>
+            <th class="text-center">Closing</th>
+        `;
+    });
+    
+    tableHTML += `</tr></thead><tbody>`;
+    
+    // Add table data
+    tableData.forEach((row, index) => {
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${row['Name of Item'] || '--'}</td>
+                <td>${row['Part No.'] || '--'}</td>
+                <td>${row['Stock Group'] || '--'}</td>
+                <td>${row['Stock Category'] || '--'}</td>
+        `;
+        
+        // Add data for each godown
+        uniqueGodowns.forEach(godownName => {
+            const godownData = row.Godowns ? 
+                row.Godowns.find(g => g['Godown Name'] === godownName) : 
+                null;
+                
+            tableHTML += `
+                <td class="text-center">${godownData && godownData['Opening'] || '--'}</td>
+                <td class="text-center">${godownData && godownData['Inward'] || '--'}</td>
+                <td class="text-center">${godownData && godownData['Outward'] || '--'}</td>
+                <td class="text-center">${godownData && godownData['Closing'] || '--'}</td>
+            `;
+        });
+        
+        tableHTML += `</tr>`;
+    });
+    
+    tableHTML += `</tbody></table>`;
+    
+    // Add styles for the table
+    const styles = `
+        <style>
+            #dataTable th {
+                background-color: #f8f9fa;
+                border: 1px solid #dee2e6;
+                padding: 8px;
+                text-align: center;
+            }
+            #dataTable td {
+                border: 1px solid #dee2e6;
+                padding: 8px;
+            }
+            .text-center {
+                text-align: center;
+            }
+        </style>
+    `;
+    
+    // Append the table to the container
+    document.getElementById('tableContainer').innerHTML = styles + tableHTML;
+    
+    
+} else if (json.data["TOP Consumable Report"]) {
+                                columns = [{
+                                        title: 'S.No.',
+                                        data: null,
+                                        render: function(data, type, row, meta) {
+                                            return meta.row + 1;
+                                        }
+                                    },
+                                    {
+                                        title: 'Name of Item',
+                                        data: 'Name of Item',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Part No.',
+                                        data: 'Part No.',
+                                        render: function(data, type, row) {
+                                            return row['Part No.'] ||
+                                                '--'; // Using bracket notation for the property with a dot
+                                        }
+                                    },
+                                    {
+                                        title: 'Stock Group',
+                                        data: 'Stock Group',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Stock Category',
+                                        data: 'Stock Category',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Total Consumed Qty',
+                                        data: 'Total Consumed Qty',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    }
+                                ];
 
-            const fetchFiles = () => {
-                const selectedType = fileTypeDropdown.value;
-                const selectedCompany = companyDropdown.value;
+                                // Dynamically add columns for Godowns
+                                let allGodowns = new Set();
+                                tableData.forEach(row => {
+                                    if (row.Godown && Array.isArray(row.Godown)) {
+                                        row.Godown.forEach(godown => {
+                                            if (godown['Godown Name']) {
+                                                allGodowns.add(godown['Godown Name']);
+                                            }
+                                        });
+                                    }
+                                });
 
-                // fileDropdown.innerHTML = '<option value="">Select File</option>';
-                // fileDropdown.disabled = true;
+                                let uniqueGodowns = Array.from(allGodowns);
 
-                if (selectedType || selectedCompany) {
-                    submitButton.disabled = false;
-                    fetch('{{ route('fleet.getFiles') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                            },
-                            body: JSON.stringify({
-                                type: selectedType,
-                                company: selectedCompany
-                            }),
-                        })
-                        .then(response => response.json())
-                        .then(latestFile => {
-                            if (latestFile && latestFile.id) {
-                                document.getElementById('latestFileId').value = latestFile.id;
+                                // Add dynamic columns for Godowns
+                                uniqueGodowns.forEach(godownName => {
+                                    columns.push({
+                                        title: godownName,
+                                        data: 'Godown',
+                                        render: function(data, type, row) {
+                                            const godownData = row.Godown ? row
+                                                .Godown.find(g => g[
+                                                        'Godown Name'] ===
+                                                    godownName) :
+                                                null;
+                                            return godownData && godownData[
+                                                'Qunatity'] ? godownData[
+                                                'Qunatity'] : '--';
+                                        }
+                                    });
+                                });
+                            } if (json.data["Godown Wise Item Summary"]) {
+    let allGodowns = new Set();
+
+    // Extract all unique Godown names
+    tableData.forEach(row => {
+        if (row.Godowns) {
+            row.Godowns.forEach(godown => {
+                if (godown['Godown Name']) {
+                    allGodowns.add(godown['Godown Name']);
+                }
+            });
+        }
+    });
+
+    let uniqueGodowns = Array.from(allGodowns);
+
+    // Build the table structure dynamically
+    let tableHTML = `
+        <thead>
+            <tr>
+                <th rowspan="2">S.No.</th>
+                <th rowspan="2">Name of Item</th>
+                <th rowspan="2">Part No.</th>
+                <th rowspan="2">Stock Group</th>
+                <th rowspan="2">Stock Category</th>
+    `;
+
+    // Add Godown headers
+    uniqueGodowns.forEach(godownName => {
+        tableHTML += `<th colspan="4" class="text-center">${godownName}</th>`;
+    });
+
+    tableHTML += `
+            </tr>
+            <tr>
+    `;
+
+    // Add subheaders for each Godown
+    uniqueGodowns.forEach(() => {
+        tableHTML += `
+            <th class="text-center">Opening</th>
+            <th class="text-center">Inward</th>
+            <th class="text-center">Outward</th>
+            <th class="text-center">Closing</th>
+        `;
+    });
+
+    tableHTML += `
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    // Add rows dynamically
+    tableData.forEach((row, index) => {
+        tableHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${row['Name of Item'] || '--'}</td>
+                <td>${row['Part No.'] || '--'}</td>
+                <td>${row['Stock Group'] || '--'}</td>
+                <td>${row['Stock Category'] || '--'}</td>
+        `;
+
+        uniqueGodowns.forEach(godownName => {
+            const godownData = row.Godowns
+                ? row.Godowns.find(g => g['Godown Name'] === godownName)
+                : null;
+
+            tableHTML += `
+                <td class="text-center">${godownData?.['Opening'] || '--'}</td>
+                <td class="text-center">${godownData?.['Inward'] || '--'}</td>
+                <td class="text-center">${godownData?.['Outward'] || '--'}</td>
+                <td class="text-center">${godownData?.['Closing'] || '--'}</td>
+            `;
+        });
+
+        tableHTML += `</tr>`;
+    });
+
+    tableHTML += `</tbody>`;
+
+    // Insert table structure into the DOM
+    $('#dataTable').html(tableHTML);
+
+    // Destroy existing DataTable instance if it exists
+    if ($.fn.DataTable.isDataTable('#dataTable')) {
+        $('#dataTable').DataTable().clear().destroy();
+    }
+
+    // Initialize DataTable
+    $('#dataTable').DataTable({
+        responsive: true,
+        autoWidth: false,
+        pageLength: 50,
+        lengthChange: true,
+        searching: true,
+        ordering: true,
+        scroller: true,
+        scrollY: '600px',
+        scrollCollapse: true,
+        scrollX: true,
+        deferRender: true,
+        processing: true,
+        language: {
+            processing: "Loading data...",
+            search: "Search:",
+            lengthMenu: "Show _MENU_ entries",
+            info: "Showing _START_ to _END_ of _TOTAL_ entries",
+            infoEmpty: "Showing 0 to 0 of 0 entries",
+            infoFiltered: "(filtered from _MAX_ total entries)"
+        },
+        drawCallback: function(settings) {
+            $('#fleetDataTable thead th').css('vertical-align', 'middle');
+            $('#fleetDataTable tbody td').css('vertical-align', 'middle');
+        }
+    });
+}
+else if (json.data["Stock Item Wise Vendor List"]) {
+                                columns = [{
+                                        title: 'Sr.No.',
+                                        data: null,
+                                        render: function(data, type, row, meta) {
+                                            return meta.row + 1;
+                                        }
+                                    },
+                                    {
+                                        title: 'Name of Item',
+                                        data: 'Name of Item',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Part No.',
+                                        data: 'Part No.',
+                                        render: function(data, type, row) {
+                                            return row['Part No.'] || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Stock Group',
+                                        data: 'Stock Group',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Stock Category',
+                                        data: 'Stock Category',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    }
+                                ];
+
+                                // Check if 'Vendor List' exists in any of the rows
+                                var hasVendorList = json.data["Stock Item Wise Vendor List"].some(
+                                    function(row) {
+                                        return row["Vendor List"] && Array.isArray(row[
+                                            "Vendor List"]) && row["Vendor List"].length > 0;
+                                    });
+
+                                // Helper function to safely get vendor data
+                                function getVendorData(data, field) {
+                                    if (data && Array.isArray(data) && data.length > 0 && data[0] &&
+                                        data[0][field] !== undefined) {
+                                        return data[0][field];
+                                    }
+                                    return '--';
+                                }
+
+                                // Vendor-related columns with improved error handling
+                                const vendorColumns = [{
+                                        title: 'Vendor Name',
+                                        data: 'Vendor List',
+                                        render: function(data, type, row) {
+                                            return getVendorData(row["Vendor List"],
+                                                "Vendor Name");
+                                        }
+                                    },
+                                    {
+                                        title: 'Supplied Quantity',
+                                        data: 'Vendor List',
+                                        render: function(data, type, row) {
+                                            return getVendorData(row["Vendor List"],
+                                                "Supplied Quantity");
+                                        }
+                                    },
+                                    {
+                                        title: 'Last Supplied Price',
+                                        data: 'Vendor List',
+                                        render: function(data, type, row) {
+                                            return getVendorData(row["Vendor List"],
+                                                "Last Supplied Price");
+                                        }
+                                    },
+                                    {
+                                        title: 'Average Price',
+                                        data: 'Vendor List',
+                                        render: function(data, type, row) {
+                                            return getVendorData(row["Vendor List"],
+                                                "Average Price");
+                                        }
+                                    }
+                                ];
+
+                                // Add vendor columns regardless of hasVendorList
+                                columns = columns.concat(vendorColumns);
+                            } else if (json.data["Fleet Wise Diesel Parts Oil Tyre Details"]) {
+                                columns = [{
+                                        title: 'S.No.',
+                                        data: null,
+                                        render: function(data, type, row, meta) {
+                                            return meta.row + 1;
+                                        }
+                                    },
+                                    {
+                                        title: 'Location',
+                                        data: 'Location',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    },
+                                    {
+                                        title: 'Door No.',
+                                        data: 'Door No.',
+                                        render: function(data, type, row) {
+                                            return row['Door No.'] ||
+                                                '--'; // Using bracket notation for the property with a dot
+                                        }
+                                    },
+                                    {
+                                        title: 'Total Cost',
+                                        data: 'Total Cost',
+                                        render: function(data) {
+                                            return data || '--';
+                                        }
+                                    }
+                                ];
+
+                                // Dynamically add columns for each category
+                                let allCategories = [];
+                                tableData.forEach(row => {
+                                    if (row.Category && Array.isArray(row.Category)) {
+                                        row.Category.forEach(category => {
+                                            if (category['Category Name']) {
+                                                allCategories.push(category[
+                                                    'Category Name']);
+                                            }
+                                        });
+                                    }
+                                });
+
+                                // Remove duplicates using Set
+                                let uniqueCategories = Array.from(new Set(allCategories));
+
+                                // Add dynamic columns for categories
+                                uniqueCategories.forEach(categoryName => {
+                                    columns.push({
+                                        title: categoryName,
+                                        data: 'Category',
+                                        render: function(data, type, row) {
+                                            // Find the matching category for the row
+                                            const categoryData = row.Category ? row
+                                                .Category.find(category => category[
+                                                        'Category Name'] ===
+                                                    categoryName) : null;
+                                            return categoryData ? categoryData[
+                                                    'Category Amount'] || '--' :
+                                                '--';
+                                        }
+                                    });
+                                });
 
                             } else {
-                                console.error('No latest file found');
+                                // Logic for other types of tables
+                                const allKeys = new Set();
+                                tableData.forEach(row => {
+                                    if (typeof row === 'object' && row !== null) {
+                                        Object.keys(row).forEach(key => allKeys.add(key));
+                                    }
+                                });
+
+                                columns = Array.from(allKeys).map(key => ({
+                                    title: key,
+                                    data: key,
+                                    render: function(data, type, row) {
+                                        // return row[key] || '--';
+                                        return (row[key]  === null || row[key]  === undefined || row[key]  === '') ? '--' : row[key] ;
+                                    }
+                                }));
                             }
-                        })
-                        .catch(error => console.error('Error fetching latest file:', error));
-                }
 
+                            // Check if DataTable is already initialized and destroy it if needed
+                            if ($.fn.DataTable.isDataTable('#fleetDataTable')) {
+                                $('#fleetDataTable').DataTable().clear().destroy();
+                            }
 
-            };
-            fileTypeDropdown.addEventListener('change', fetchFiles);
-            companyDropdown.addEventListener('change', fetchFiles);
-            fetchFiles();
+                            // Empty the table before reinitializing
+                            $('#fleetDataTable').empty();
+
+                            // Create the custom header with godown names (if present)
+                            let headerHtml = '<tr>';
+                            headerHtml += columns
+                                .map(col => `<th class="text-center">${col.title}</th>`)
+                                .join('');
+                            headerHtml += '</tr>';
+
+                            // // Set custom header
+                            // $('#fleetDataTable thead').html(headerHtml);
+
+                            // Initialize the DataTable with the new data and columns
+                            let table = $('#fleetDataTable').DataTable({
+                                data: tableData,
+                                columns: columns,
+                                responsive: true,
+                                autoWidth: false,
+                                pageLength: 50,
+                                lengthChange: true,
+                                searching: true,
+                                ordering: true,
+                                scroller: true,
+                                scrollY: '600px',
+                                scrollCollapse: true,
+                                scrollX: true,
+                                deferRender: true,
+                                processing: true,
+                                language: {
+                                    processing: "Loading data...",
+                                    search: "Search:",
+                                    lengthMenu: "Show _MENU_ entries",
+                                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                                    infoEmpty: "Showing 0 to 0 of 0 entries",
+                                    infoFiltered: "(filtered from _MAX_ total entries)"
+                                },
+                               
+                                drawCallback: function(settings) {
+                                    $('#fleetDataTable thead th').css('vertical-align',
+                                        'middle');
+                                    $('#fleetDataTable tbody td').css('vertical-align',
+                                        'middle');
+                                }
+                            });
+                        }
+
+                        return JSON.stringify(json);
+                    }
+                },
+                columnDefs: [{
+                    targets: '_all',
+                    render: function(data, type, row) {
+                        if (Array.isArray(data)) {
+                            return data.map(item => {
+                                if (typeof item === 'boolean') {
+                                    return item ? 'true' : 'false';
+                                }
+                                return item;
+                            }).join(', ');
+                        }
+                        return data ?? '-';
+                    }
+                }]
+            });
+
         });
     </script>
 @endpush

@@ -2,12 +2,12 @@
     # Apache 2.4.10+ can proxy to unix socket
     SetHandler "proxy:unix:/var/run/php/php8.2-fpm.sock|fcgi://localhost/"
 </FilesMatch>
-php_value upload_max_filesize 64M
+#php_value upload_max_filesize 64M
 
-php_value post_max_size 128M
+#php_value post_max_size 128M
 
-php_value memory_limit 256M
+#php_value memory_limit 512M
 
-php_value max_execution_time 300
+#php_value max_execution_time 300
 
-php_value max_input_time 300
+#php_value max_input_time 300
