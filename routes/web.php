@@ -188,7 +188,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/fleet/alldata', [FleetReportController::class, 'displayAllFleetData'])->name('fleet.reportScreen_post');
     Route::get('loadFleetData', [FleetReportController::class, 'loadFleetData'])->name('loadFleetData');
-    Route::get('fleet/data', [FleetReportController::class, 'getFleetData'])->name('fleet.data');
+    Route::post('fleet/data', [FleetReportController::class, 'getFleetData'])->name('fleet.data');
     Route::post('/get-files', [FleetReportController::class, 'getFiles'])->name('fleet.getFiles');
     Route::delete('/delete-fleet-file/{id}', [FleetReportController::class, 'deleteFleetFile'])->name('fleetfile.destroy');
 
