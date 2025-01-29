@@ -324,7 +324,7 @@ class FleetReportController extends Controller
                 'Invoice No',
                 'Name of Owner',
                 'Cost Center(Location)',
-                'Section',
+                'Seaction',
                 'Date of Delivery',
                 'Capacity',
                 'Regd Date',
@@ -370,7 +370,7 @@ class FleetReportController extends Controller
                     'Invoice No' => $entry['Invoice No.'] ?? '',
                     'Name of Owner' => $entry['Name of Owner'] ?? '',
                     'Cost Center(Location)' => $entry['Cost Center'] ?? '',
-                    'Section' => $entry['Section'] ?? '',
+                    'Seaction' => $entry['Seaction'] ?? '',
                     'Date of Delivery' => $entry['Date of Delivery'] ?? '',
                     'Capacity' => $entry['Loading Capacity'] ?? '',
                     'Regd Date' => $entry['Regd. Date'] ?? '',
@@ -454,9 +454,47 @@ class FleetReportController extends Controller
                 }
                 $formattedData[] = $rowData;
             }
+        } elseif ($fileKey === 'Fleet Wise Trip - Diesel - KMS - Hours') {
+            $headers = [
+                'Location',
+                'Door No',
+                'Diesel(Ltr)',
+                'Monthly KMS',
+                'Monthly Hours',
+                'Lead in KMS',
+                'HSD per KM',
+                'HSD per HOUR',
+                'Diesel per Quantity'
+            ];
+
+            // Transform the data
+            foreach ($data as $index => $entry) {
+                $formattedData[] = [
+                    'Location' => $entry['Location'] ?? '--',
+                    'Door No' => $entry['Door No.'] ?? '--',  // Note the period after "No"
+                    'Diesel(Ltr)' => $entry['Diesel(Ltr.)'] ?? '--',  // Added period
+                    'Monthly KMS' => $entry["Monthly\nKMS"] ?? '--',
+                    'Monthly Hours' => $entry["Monthly\nHours"] ?? '--',
+                    'Lead in KMS' => $entry['Lead in KMS'] ?? '--',
+                    'HSD per KM' => $entry['HSD per KM'] ?? '--',
+                    'HSD per HOUR' => $entry['HSD per HOUR'] ?? '--',
+                    'Capacity' => $entry['Loading Capacity'] ?? '--',
+                    'Diesel per Quantity' => $entry['Diesel per Quantity'] ?? '--',
+                ];
+            }
         } else {
-            $headers = array_keys($data[0] ?? []);
-            $formattedData = $data;
+            $formattedData = array_map(function ($row) {
+                $newRow = [];
+                foreach ($row as $key => $value) {
+                    $safeKey = str_replace('.', '_', $key);
+                    $newRow[$safeKey] = $value;
+                }
+                return $newRow;
+            }, $data);
+
+            $headers = array_map(function ($header) {
+                return str_replace('.', '_', $header);
+            }, array_keys($data[0] ?? []));
         }
 
         // Paginate data
