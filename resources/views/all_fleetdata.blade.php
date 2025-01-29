@@ -19,6 +19,51 @@
         div.dt-container select.dt-input {
             padding: 0 18px !important;
         }
+ /* Style for both header and body cells */
+ .custom-datatable  thead th,
+#fleetDataTable tbody td,
+.dataTables_scrollBody tbody td {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+    max-width: 150px !important; /* Fixed width for all cells */
+    min-width: 150px !important; /* Ensure minimum width */
+    width: 150px !important; /* Force exact width */
+}
+
+/* Specific styles for header cells */
+.custom-datatable thead th {
+    position: sticky !important;
+    top: 0;
+    background-color: #fff; /* or your preferred background color */
+    z-index: 1;
+}
+
+/* Handle specific columns if needed */
+.custom-datatable thead th:first-child,
+#fleetDataTable tbody td:first-child {
+    min-width: 100px !important; /* Adjust for smaller columns */
+    width: 100px !important;
+}
+
+/* Ensure scroll container doesn't override widths */
+.dataTables_scrollBody {
+    overflow-x: auto !important;
+}
+
+/* Force table layout to respect column widths */
+#fleetDataTable {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+/* Handle text overflow */
+.custom-datatable thead th,
+#fleetDataTable tbody td {
+    padding: 8px 25px !important;
+    text-overflow: ellipsis !important;
+    overflow: hidden !important;
+}
     </style>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" />
 
@@ -101,7 +146,7 @@
    $('#fleetDataTable').DataTable({
         serverSide: true,
         processing: true,
-        autoWidth: true,
+        autoWidth: false,
         ajax: {
             url: "{{ route('fleet.data') }}",
             type: 'POST',
@@ -118,7 +163,7 @@
                     render: function (data) {
                         return data !== null && data !== undefined && data !== '' ? data : '--';
                     },
-                    autoWidth: true 
+                    autoWidth: false 
                 }));
 
 
@@ -178,7 +223,7 @@
                     scrollY: '50vh',
                     scroller: true,
                     deferRender: true,
-                    autoWidth: true,
+                    autoWidth: false,
                     language: {
                         processing: "Loading data...",
                         info: "Showing _START_ to _END_ of _TOTAL_ entries",
