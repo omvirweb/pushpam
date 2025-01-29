@@ -147,6 +147,7 @@
         serverSide: true,
         processing: true,
         autoWidth: false,
+        ordering: false,
         ajax: {
             url: "{{ route('fleet.data') }}",
             type: 'POST',
@@ -224,6 +225,7 @@
                     scroller: true,
                     deferRender: true,
                     autoWidth: false,
+                    ordering: false,
                     language: {
                         processing: "Loading data...",
                         info: "Showing _START_ to _END_ of _TOTAL_ entries",
