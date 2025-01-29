@@ -99,97 +99,105 @@
     <script src="https://cdn.datatables.net/scroller/2.4.3/js/dataTables.scroller.min.js"></script>
     <script>
    $('#fleetDataTable').DataTable({
-    serverSide: true,
-    processing: true,
-    ajax: {
-        url: "{{ route('fleet.data') }}",
-        type: 'POST',
-        data: function (d) {
-            d.type = "{{ $selectedType }}";
-            d.company = "{{ $selectedCompany }}";
-        },
-        dataSrc: function (json) {
-            const headers = json.headers || [];
-            const dynamicColumns = headers.map((header, index) => ({
-                title: header,
-                data: header,
-                render: function (data) {
-                    return data !== null && data !== undefined && data !== '' ? data : '--';
-                },
-            }));
-
-            // Reinitialize DataTable if already initialized
-            if ($.fn.DataTable.isDataTable('#fleetDataTable')) {
-                $('#fleetDataTable').DataTable().clear().destroy();
-            }
-
-            // Build custom multi-row headers dynamically if the key matches
-            if (json.key === 'Godown Wise Item Summary') {
-                const staticHeaders = ['S.No.', 'Name of Item', 'Part No.', 'Stock Group', 'Stock Category'];
-                const godownHeaders = headers.slice(staticHeaders.length); // Extract dynamic Godown headers
-                const groupedHeaders = godownHeaders.reduce((acc, curr) => {
-                    const [godownName, headerType] = curr.split(':'); // Split header by `:`
-                    if (!acc[godownName]) acc[godownName] = [];
-                    acc[godownName].push(headerType.trim());
-                    return acc;
-                }, {});
-                
-                // Generate HTML for multi-row header
-                let firstRow = '<tr>';
-                let secondRow = '<tr>';
-                staticHeaders.forEach(header => {
-                    firstRow += `<th rowspan="2">${header}</th>`;
-                });
-                
-                Object.entries(groupedHeaders).forEach(([godown, columns]) => {     
-                    firstRow += `<th colspan="${columns.length}" class="text-center">${godown}</th>`;
-                    columns.forEach(col => {
-                        secondRow += `<th>${col}</th>`;
-                    });
-                });
-                
-                firstRow += '</tr>';
-                secondRow += '</tr>';
-
-                // Replace the DataTable's header
-                $('#fleetDataTable thead').html(firstRow + secondRow);
-            }
-
-
-            // Initialize DataTable with new headers and columns
-            $('#fleetDataTable').DataTable({
-                serverSide: true,
-                processing: true,
-                ajax: {
-                    url: "{{ route('fleet.data') }}",
-                    type: 'POST',
-                    data: function (d) {
-                        d.type = "{{ $selectedType }}";
-                        d.company = "{{ $selectedCompany }}";
+        serverSide: true,
+        processing: true,
+        autoWidth: true,
+        ajax: {
+            url: "{{ route('fleet.data') }}",
+            type: 'POST',
+            data: function (d) {
+                d.type = "{{ $selectedType }}";
+                d.company = "{{ $selectedCompany }}";
+            },
+            dataSrc: function (json) {
+                const headers = json.headers || [];
+                const dynamicColumns = headers.map((header) => ({
+                    title: header,
+                    data: header,
+                    defaultContent: '--', // Ensure a default value for undefined/null data
+                    render: function (data) {
+                        return data !== null && data !== undefined && data !== '' ? data : '--';
                     },
-                },
-                columns: dynamicColumns,
-                scrollY: '50vh',
-                scroller: true,
-                deferRender: true,
-                language: {
-                    processing: "Loading data...",
-                    info: "Showing _START_ to _END_ of _TOTAL_ entries",
-                },
-            });
-            
-            
-            return json.data;
+                    autoWidth: true 
+                }));
+
+
+                // Reinitialize DataTable if already initialized
+                if ($.fn.DataTable.isDataTable('#fleetDataTable')) {
+                    $('#fleetDataTable').DataTable().clear().destroy();
+                    $('#fleetDataTable thead').empty(); // Clear the header to avoid mismatches
+                }
+
+
+                // Build custom multi-row headers dynamically if the key matches
+                if (json.key === 'Godown Wise Item Summary') {
+                    const staticHeaders = ['S.No.', 'Name of Item', 'Part No.', 'Stock Group', 'Stock Category'];
+                    const godownHeaders = headers.slice(staticHeaders.length); // Extract dynamic Godown headers
+                    const groupedHeaders = godownHeaders.reduce((acc, curr) => {
+                        const [godownName, headerType] = curr.split(':'); // Split header by `:`
+                        if (!acc[godownName]) acc[godownName] = [];
+                        acc[godownName].push(headerType.trim());
+                        return acc;
+                    }, {});
+                    
+                    // Generate HTML for multi-row header
+                    let firstRow = '<tr>';
+                    let secondRow = '<tr>';
+                    staticHeaders.forEach(header => {
+                        firstRow += `<th rowspan="2">${header}</th>`;
+                    });
+                    
+                    Object.entries(groupedHeaders).forEach(([godown, columns]) => {     
+                        firstRow += `<th colspan="${columns.length}" class="text-center">${godown}</th>`;
+                        columns.forEach(col => {
+                            secondRow += `<th>${col}</th>`;
+                        });
+                    });
+                    
+                    firstRow += '</tr>';
+                    secondRow += '</tr>';
+
+                    // Replace the DataTable's header
+                    $('#fleetDataTable thead').html(firstRow + secondRow);
+                }
+
+
+                // Initialize DataTable with new headers and columns
+                $('#fleetDataTable').DataTable({
+                    serverSide: true,
+                    processing: true,
+                    ajax: {
+                        url: "{{ route('fleet.data') }}",
+                        type: 'POST',
+                        data: function (d) {
+                            d.type = "{{ $selectedType }}";
+                            d.company = "{{ $selectedCompany }}";
+                        },
+                    },
+                    columns: dynamicColumns,
+                    scrollY: '50vh',
+                    scroller: true,
+                    deferRender: true,
+                    autoWidth: true,
+                    language: {
+                        processing: "Loading data...",
+                        info: "Showing _START_ to _END_ of _TOTAL_ entries",
+                    },
+                });
+                
+                
+                return json.data;
+            },
+            initComplete: function () {
+                $('#fleetDataTable thead th').each(function () {
+                    const originalText = $(this).text();
+                    const newText = originalText.replace(/.*:\s?/, ''); // Remove text before ":" and the space
+                    $(this).text(newText);
+                });
+            },
+        
         },
-        initComplete: function () {
-            $('#fleetDataTable thead th').each(function () {
-                const originalText = $(this).text();
-                const newText = originalText.replace(/.*:\s?/, ''); // Remove text before ":" and the space
-                $(this).text(newText);
-            });
-        },
-    },
-});
+    });
 
 const thElements = document.querySelectorAll('#fleetDataTable th');
 

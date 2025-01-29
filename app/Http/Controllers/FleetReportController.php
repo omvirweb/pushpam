@@ -153,6 +153,7 @@ class FleetReportController extends Controller
         $formattedData = [];
         // dd($data);
         if ($fileKey === 'Stock Item Wise Vendor List') {
+            // Define headers
             $headers = [
                 '#',
                 'Name of Item',
@@ -164,67 +165,108 @@ class FleetReportController extends Controller
                 'Last Supplied Price',
                 'Average Price',
             ];
-            foreach ($data as $index => $row) {
-                $baseRow = [
-                    '#' => $index + 1,
-                    'Name of Item' => $row['Name of Item'] ?? '-',
-                    'Part No' => $row['Part No.'] ?? '-',
-                    'Stock Group' => $row['Stock Group'] ?? '-',
-                    'Stock Category' => $row['Stock Category'] ?? '-',
-                ];
-                if (isset($row['Vendor List']) && is_array($row['Vendor List'])) {
-                    foreach ($row['Vendor List'] as $vendor) {
-                        $formattedData[] = array_merge($baseRow, [
+
+            $formattedData = [];
+            $rowNumber = 1;  // Initialize row counter
+
+            foreach ($data as $item) {
+                // If there are vendors in the list
+                if (!empty($item['Vendor List']) && is_array($item['Vendor List'])) {
+                    foreach ($item['Vendor List'] as $vendor) {
+                        $formattedData[] = [
+                            '#' => $rowNumber,
+                            'Name of Item' => $item['Name of Item'] ?? '-',
+                            'Part No' => $item['Part No.'] ?? '-',
+                            'Stock Group' => $item['Stock Group'] ?? '-',
+                            'Stock Category' => $item['Stock Category'] ?? '-',
                             'Vendor Name' => $vendor['Vendor Name'] ?? '-',
                             'Supplied Quantity' => $vendor['Supplied Quantity'] ?? '-',
                             'Last Supplied Price' => $vendor['Last Supplied Price'] ?? '-',
                             'Average Price' => $vendor['Average Price'] ?? '-',
-                        ]);
+                        ];
+                        $rowNumber++;  // Increment row number for each vendor entry
                     }
                 } else {
-                    $formattedData[] = array_merge($baseRow, [
+                    // If no vendors, create a row with empty vendor details
+                    $formattedData[] = [
+                        '#' => $rowNumber,
+                        'Name of Item' => $item['Name of Item'] ?? '-',
+                        'Part No' => $item['Part No.'] ?? '-',
+                        'Stock Group' => $item['Stock Group'] ?? '-',
+                        'Stock Category' => $item['Stock Category'] ?? '-',
                         'Vendor Name' => '-',
                         'Supplied Quantity' => '-',
                         'Last Supplied Price' => '-',
                         'Average Price' => '-',
-                    ]);
+                    ];
+                    $rowNumber++;
                 }
             }
+
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details') {
-            // Extract static headers
-            $staticHeaders = ['#', 'Location', 'Door No.', 'Total Cost'];
-
-            // Extract dynamic headers for categories
+            // Initialize arrays
             $dynamicHeaders = [];
-            if (!empty($data[0]['Category']) && is_array($data[0]['Category'])) {
-                foreach ($data[0]['Category'] as $category) {
-                    $dynamicHeaders[] = $category['Category Name'] ?? '-';
+            $formattedData = [];
+
+            // First pass: Extract all possible category names from all entries
+            $allCategories = [];
+            foreach ($data as $entry) {
+                if (!empty($entry['Category']) && is_array($entry['Category'])) {
+                    foreach ($entry['Category'] as $category) {
+                        if (isset($category['Category Name'])) {
+                            $allCategories[$category['Category Name']] = true;
+                        }
+                    }
                 }
             }
+            // Convert to array and maintain unique categories
+            $dynamicHeaders = array_keys($allCategories);
 
-            // Merge static and dynamic headers
-            $headers = array_merge($staticHeaders, $dynamicHeaders);
+            // Define prefix and suffix headers in desired order
+            $prefixHeaders = ['#', 'Location', 'Door No'];
+            $suffixHeaders = [
+                'Total Cost',
+                'Monthly KMS',
+                'Monthly Hour',
+                'Cost per KMS',
+                'Cost per Hour',
+            ];
+
+            // Combine headers in desired order
+            $headers = array_merge($prefixHeaders, $dynamicHeaders, $suffixHeaders);
 
             // Format data rows
             foreach ($data as $key => $entry) {
-                // Base row with static columns
-                $baseRow = [
-                    '#' => $key + 1,
-                    'Location' => $entry['Location'] ?? '-',
-                    'Door No.' => $entry['Door No.'] ?? '-',
-                    'Total Cost' => $entry['Total Cost'] ?? '-',
-                ];
+                // Initialize all category amounts with defaults
+                $categoryData = array_fill_keys($dynamicHeaders, '-');
 
-                // Add dynamic category values
-                $categoryData = [];
+                // Fill in actual category amounts where they exist
                 if (!empty($entry['Category']) && is_array($entry['Category'])) {
                     foreach ($entry['Category'] as $category) {
-                        $categoryData[] = $category['Category Amount'] ?? '-';
+                        if (isset($category['Category Name'])) {
+                            $categoryName = $category['Category Name'];
+                            $categoryData[$categoryName] = $category['Category Amount'] ?? '-';
+                        }
                     }
                 }
 
-                // Combine static and dynamic data
-                $formattedData[] = array_merge($baseRow, $categoryData);
+                // Prepare prefix and suffix data
+                $prefixData = [
+                    '#' => $key + 1,
+                    'Location' => $entry['Location'] ?? '-',
+                    'Door No' => $entry['Door No.'] ?? '-'
+                ];
+
+                $suffixData = [
+                    'Total Cost' => $entry['Total Cost'] ?? '-',
+                    'Monthly KMS' => $entry['Monthly KMS'] ?? '-',
+                    'Monthly Hour' => $entry['Monthly Hour'] ?? '-',
+                    'Cost per KMS' => $entry['Cost per KMS'] ?? '-',
+                    'Cost per Hour' => $entry['Cost per Hour'] ?? '-',
+                ];
+
+                // Combine data in the same order as headers
+                $formattedData[] = array_merge($prefixData, $categoryData, $suffixData);
             }
         } elseif ($fileKey === 'TOP Consumable Report') {
             // Static columns
@@ -279,18 +321,18 @@ class FleetReportController extends Controller
                 '#',
                 'Door No',
                 'Status(Active/Inactive)',
-                'Invoice No.',
+                'Invoice No',
                 'Name of Owner',
                 'Cost Center(Location)',
                 'Section',
                 'Date of Delivery',
                 'Capacity',
-                'Regd. Date',
-                'Regd. State',
-                'Regd. RTO',
-                'Regd.No.',
-                'Engine No.',
-                'Chasis No.',
+                'Regd Date',
+                'Regd State',
+                'Regd RTO',
+                'Regd No',
+                'Engine No',
+                'Chasis No',
                 'Road Tax From',
                 'Road Tax To',
                 'Fitness From',
@@ -311,7 +353,7 @@ class FleetReportController extends Controller
                 'EMI End Date',
                 'EMI Amount',
                 'Insured By',
-                'Insurance Policy No.',
+                'Insurance Policy No',
                 'Insurance IDV',
                 'Insurance From',
                 'Insurance To',
@@ -323,20 +365,20 @@ class FleetReportController extends Controller
             foreach ($data as $index => $entry) {
                 $formattedData[] = [
                     '#' => $entry['S.No.'],
-                    'Door No' => $entry['Door No'] ?? '',
+                    'Door No' => $entry['Door No.'] ?? '',
                     'Status(Active/Inactive)' => $entry['Vehicle Status'][0] ?? '',
-                    'Invoice No.' => $entry['Invoice No.'] ?? '',
+                    'Invoice No' => $entry['Invoice No.'] ?? '',
                     'Name of Owner' => $entry['Name of Owner'] ?? '',
                     'Cost Center(Location)' => $entry['Cost Center'] ?? '',
                     'Section' => $entry['Section'] ?? '',
                     'Date of Delivery' => $entry['Date of Delivery'] ?? '',
                     'Capacity' => $entry['Loading Capacity'] ?? '',
-                    'Regd. Date' => $entry['Regd. Date'] ?? '',
-                    'Regd. State' => $entry['Regd. State'] ?? '',
-                    'Regd. RTO' => $entry['Regd. RTO'] ?? '',
-                    'Regd.No.' => $entry['Regd.No.'] ?? '',
-                    'Engine No.' => $entry['Engine No.'] ?? '',
-                    'Chasis No.' => $entry['Chasis No.'] ?? '',
+                    'Regd Date' => $entry['Regd. Date'] ?? '',
+                    'Regd State' => $entry['Regd. State'] ?? '',
+                    'Regd RTO' => $entry['Regd. RTO'] ?? '',
+                    'Regd No' => $entry['Regd.No.'] ?? '',
+                    'Engine No' => $entry['Engine No.'] ?? '',
+                    'Chasis No' => $entry['Chasis No.'] ?? '',
                     'Road Tax From' => $entry['Road Tax From'] ?? '',
                     'Road Tax To' => $entry['Road Tax To'] ?? '',
                     'Fitness From' => $entry['Fitness From'] ?? '',
@@ -357,7 +399,7 @@ class FleetReportController extends Controller
                     'EMI End Date' => $entry['EMI End Date'] ?? '',
                     'EMI Amount' => $entry['EMI Amount'] ?? '',
                     'Insured By' => $entry['Insured By'] ?? '',
-                    'Insurance Policy No.' => $entry['Insurance Policy No.'] ?? '',
+                    'Insurance Policy No' => $entry['Insurance Policy No.'] ?? '',
                     'Insurance IDV' => $entry['Insurance IDV'] ?? '',
                     'Insurance From' => $entry['Insurance From'] ?? '',
                     'Insurance To' => $entry['Insurance To'] ?? '',
