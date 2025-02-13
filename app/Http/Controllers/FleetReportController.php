@@ -458,6 +458,8 @@ class FleetReportController extends Controller
             $headers = [
                 'Location',
                 'Door No',
+                'No of Trips',
+                'Quantity',
                 'Diesel(Ltr)',
                 'Monthly KMS',
                 'Monthly Hours',
@@ -472,6 +474,8 @@ class FleetReportController extends Controller
                 $formattedData[] = [
                     'Location' => $entry['Location'] ?? '--',
                     'Door No' => $entry['Door No.'] ?? '--',  // Note the period after "No"
+                    'No of Trips' => $entry['No. of Trips'] ?? '--',  // Note the period after "No"
+                    'Quantity' => $entry['Quantity'] ?? '--',  // Note the period after "No"
                     'Diesel(Ltr)' => $entry['Diesel(Ltr.)'] ?? '--',  // Added period
                     'Monthly KMS' => $entry["Monthly\nKMS"] ?? '--',
                     'Monthly Hours' => $entry["Monthly\nHours"] ?? '--',
