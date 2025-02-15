@@ -81,7 +81,7 @@ class FleetReportController extends Controller
         $selectedCompany = $request->get('company');
         $start = (int) $request->get('start', 0);
         $length = (int) $request->get('length', 50);
-
+        $searchColumns = $request->get('columns', []);
         if ($user->id == 1) {
             $filesList = FleetFile::where('type', $selectedType)
                 ->when($selectedCompany, function ($query) use ($selectedCompany) {
@@ -500,9 +500,22 @@ class FleetReportController extends Controller
                 return str_replace('.', '_', $header);
             }, array_keys($data[0] ?? []));
         }
+        $filteredData = array_filter($formattedData, function ($row) use ($searchColumns) {
+            foreach ($searchColumns as $column) {
+                $columnName = str_replace('.', '_', $column['data']); // Convert dots to underscores
+                $searchValue = trim($column['search']['value'] ?? '');
+                if (!empty($searchValue) && stripos($row[$columnName] ?? '', $searchValue) === false) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
+        $recordsFiltered = count($filteredData);
+
 
         // Paginate data
-        $paginatedData = array_slice($formattedData, $start, $length);
+        $paginatedData = array_slice(array_values($filteredData), $start, $length);
         // dd($paginatedData);
 
         // Return JSON response
@@ -511,7 +524,7 @@ class FleetReportController extends Controller
             'key' => $fileKey,
             'headers' => $headers,
             'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $totalRecords,
+            'recordsFiltered' => $recordsFiltered,
         ]);
 
     }
