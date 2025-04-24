@@ -166,6 +166,8 @@
                         d.company = "{{ $selectedCompany }}";
                     },
                     dataSrc: function (json) {
+                        console.clear();
+                        console.log(json.data);
                         const headers = json.headers || [];
                         const dynamicColumns = headers.map((header) => ({
                             title: header,
@@ -241,8 +243,7 @@
                                     });
                                 });
                             }
-                        });
-
+                        });                        
                         return json.data;
                     }
                 }

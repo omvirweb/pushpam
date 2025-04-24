@@ -67,7 +67,7 @@ class FleetReportController extends Controller
 
         // Only return the view with initial data
         return view('all_fleetdata', [
-            'fileTypes' => Type::get(),
+            'fileTypes' => Type::orderBy('name', 'ASC')->get(),
             'companies' => $companies,
             'selectedType' => $selectedType,
             'selectedCompany' => $selectedCompany,
@@ -203,6 +203,83 @@ class FleetReportController extends Controller
                 }
             }
 
+        } elseif($fileKey === 'Voucher') { 
+            // Define headers
+            $headers = [
+                '#',
+                'Date',
+                'Voucher Type',
+                'Voucher Number',
+                'GUID',
+                'MASTERID',
+                'ALTERID',
+                'VOUCHERKEY',
+                'ENTEREDBY',
+                'Ref. No.',
+                'Ref. Date',
+                'CostCentre Name',
+                'Narration',
+                'Party Name',
+                'KMS Reading',
+                'Hours Reading',
+                'Diesel(Ltr.)',
+                'No. of Trips',
+                'Trip Factor',
+                'Quantity',
+                'Inventory Entries',
+                'Ledger Entries',
+                'Ledger Name',
+                'Amount',
+                'Name of Item',
+                'Accounting Head',
+                'Batch Name',
+                'Godown Name',
+                'HSN',
+                'GST Rate',
+                'Rate',
+            ];
+
+            $formattedData = [];
+            $rowNumber = 1;  // Initialize row counter
+
+            foreach ($data as $index => $entry) {
+                // If there are vendors in the list
+                @$formattedData[] = [
+                    '#' => $rowNumber,
+                    'Date' => $entry['Date'] ?? '-',
+                    'Voucher Type' => $entry['Voucher Type'] ?? '-',
+                    'Voucher Number' => $entry['Voucher Number'] ?? '-',
+                    'GUID' => $entry['GUID'] ?? '-',
+                    'MASTERID' => $entry['MASTERID'] ?? '-',
+                    'ALTERID' => $entry['ALTERID'] ?? '-',
+                    'VOUCHERKEY' => $entry['VOUCHERKEY'] ?? '-',
+                    'ENTEREDBY' => $entry['ENTEREDBY'] ?? '-',
+                    'Ref. No.' => $entry['Ref. No.'] ?? '-',
+                    'Ref. Date' => $entry['Ref. Date'] ?? '-',
+                    'CostCentre Name' => $entry['GUCostCentre NameID'] ?? '-',
+                    'Narration' => $entry['Narration'] ?? '-',
+                    'Party Name' => $entry['Party Name'] ?? '-',
+                    'KMS Reading' => $entry['KMS Reading'] ?? '-',
+                    'Hours Reading' => $entry['Hours Reading'] ?? '-',
+                    'Diesel(Ltr.)' => $entry['Diesel(Ltr.)'] ?? '-',
+                    'No. of Trips' => $entry['No. of Trips'] ?? '-',
+                    'Trip Factor' => $entry['Trip Factor'] ?? '-',
+                    'Quantity' => $entry['Quantity'] ?? '-',
+                    'Ledger Entries' => $entry['Ledger Entries'] ?? '-',
+                    'Ledger Name' => $entry['Ledger Name'] ?? '-',
+                    'Amount' => $entry['Amount'] ?? '-',
+                    'Name of Item' => $entry['Name of Item'] ?? '-',
+                    'Accounting Head' => $entry['Accounting Head'] ?? '-',
+                    'Batch Name' => $entry['Batch Name'] ?? '-',
+                    'Godown Name' => $entry['Godown Name'] ?? '-',
+                    'HSN' => $entry['HSN'] ?? '-',
+                    'GST Rate' => $entry['GST Rate'] ?? '-',
+                    'Rate' => $entry['Rate'] ?? '-',
+                ];
+
+                $rowNumber++;
+            }
+    
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details') {
             // Initialize arrays
             $dynamicHeaders = [];
@@ -500,6 +577,7 @@ class FleetReportController extends Controller
                 return str_replace('.', '_', $header);
             }, array_keys($data[0] ?? []));
         }
+        
         $filteredData = array_filter($formattedData, function ($row) use ($searchColumns) {
             foreach ($searchColumns as $column) {
                 $columnName = str_replace('.', '_', $column['data']); // Convert dots to underscores
@@ -516,7 +594,7 @@ class FleetReportController extends Controller
 
         // Paginate data
         $paginatedData = array_slice(array_values($filteredData), $start, $length);
-        // dd($paginatedData);
+        //dd($paginatedData,$fileKey);
 
         // Return JSON response
         return response()->json([
