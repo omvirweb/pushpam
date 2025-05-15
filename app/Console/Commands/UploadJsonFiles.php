@@ -7,18 +7,16 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FleetFile;
 use App\Models\Type;
-use Illuminate\Support\Facades\File;
 
 class UploadJsonFiles extends Command
 {
     protected $signature = 'json:upload';
     protected $description = 'Upload JSON files from the specified directory and process them.';
 
-    public function handle()
-    {
+    public function handle() {
         $sourceDir = '/home/ftpuserpushpam/ftp';
-        // $processedDirBase = $sourceDir . DIRECTORY_SEPARATOR . 'uploaded';
         $processedDirBase = '/home/ftpuserpushpam/uploaded';
+
         $batchDirName = date('Y-m-d_H-i-s');
         $processedDir = $processedDirBase . DIRECTORY_SEPARATOR . $batchDirName;
 
@@ -38,12 +36,14 @@ class UploadJsonFiles extends Command
 
         foreach ($files as $file) {
             $this->info("Processing file: $file");
+
             try {
                 $jsonData = json_decode(file_get_contents($file), true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
                     $this->error("Invalid JSON format in file: $file");
                     continue;
                 }
+
                 $companyId = 0;
                 $keys = array_keys($jsonData);
 
@@ -52,46 +52,65 @@ class UploadJsonFiles extends Command
                         $companyCode = $companyDetail['Company Code'] ?? null;
                         $companyName = $companyDetail['Company Name'] ?? null;
                         $companyAddress = $companyDetail['Address'] ?? null;
-                        if ($companyCode) {
-                            $this->info("Processing company: $companyCode");
-                            $company = Company::where('code', $companyCode)->first();
+
+                        if ($companyName) {
+                            $this->info("Processing company: $companyName");
+                            $company = Company::where('name', $companyName)->first();
+
                             if ($company) {
-                                $company->update([
+                                if ($companyCode != null || $companyAddress != null) {
+                                    if ($companyCode != $company->code || $companyAddress != $company->address)  {
+                                        if ($companyCode != $company->code) {
+                                            $company->code = $companyCode;
+                                        }
+
+                                        if ($companyAddress != $company->address)  {
+                                            $company->address = $companyAddress;
+                                        }
+
+                                        $company->save();
+                                    }
+                                }
+
+                                $this->info("Company updated: $companyCode");
+                            } else {
+                                $company = Company::create([
+                                    'code' => $companyCode,
                                     'name' => $companyName,
                                     'address' => $companyAddress,
                                 ]);
-                                $this->info("Company updated: $companyCode");
-                            } else {
-                                if ($companyName) {
-                                    $company = Company::create([
-                                        'code' => $companyCode,
-                                        'name' => $companyName,
-                                        'address' => $companyAddress,
-                                    ]);
-                                    $this->info("Company added: $companyCode");
-                                }
+
+                                $this->info("Company added: $companyCode");
                             }
+
                             $companyId = $company->id;
                         } else {
-                            $this->error("Company Code missing in 'Company Details' for file: $file");
+                            $this->error("Company Name missing in 'Company Details' for file: $file");
                         }
                     }
                 }
 
                 $type = isset($keys[1]) ? $keys[1] : null;
                 $fileName = date('d_m_y_h_i_A') . '_' . basename($file);
+
                 if ($type) {
                     $typeData = Type::where('name', $type)->first();
-                    if ($typeData) {
-                        ini_set('max_execution_time', 300);
-                        ini_set('memory_limit', '512M');
-                        $filePath = Storage::disk('public')->putFileAs('uploads', $file, $fileName);
-                        FleetFile::create([
-                            'file_name' => $fileName,
-                            'type' => $typeData->id,
-                            'company_id' => $companyId,
+
+                    if (!$typeData) {
+                        $typeData = Type::create([
+                            'name' => $type,
                         ]);
                     }
+
+                    ini_set('max_execution_time', 300);
+                    ini_set('memory_limit', '512M');
+                    $filePath = Storage::disk('public')->putFileAs('uploads', $file, $fileName);
+
+                    FleetFile::create([
+                        'file_name' => $fileName,
+                        'type' => $typeData->id,
+                        'company_id' => $companyId,
+                    ]);
                 } else {
                     $this->error("Type key not found after 'Company Details' in file: $file");
                 }
@@ -122,19 +141,21 @@ class UploadJsonFiles extends Command
                 //     $this->error("Failed to create directory: {$e->getMessage()}");
                 // }
 
-
                 if (!is_dir($processedDir)) {
                     mkdir($processedDir, 0755, true);
                 }
+
                 // if (!File::exists($processedDir)) {
                 //     File::makeDirectory($processedDir, 0755, true);
                 // }
+
                 rename($file, "$processedDir/" . basename($file));
                 $this->info("Moved file to: $processedDir");
             } catch (\Exception $e) {
                 $this->error("Error processing file $file: " . $e->getMessage());
             }
         }
+
         return 0;
     }
 }
