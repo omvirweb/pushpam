@@ -10,8 +10,8 @@ class FleetData extends Model
     use HasFactory;
 
     protected $fillable = [
-        'file_id', 'location', 'door_no', 'total_cost','kms_reading','hour_reading',
-        'cost_per_kms','cost_per_hour', 'category_name', 'category_amount'
+        'file_id', 'location', 'door_no', 'total_cost','total_cost_type','kms_reading','hour_reading',
+        'cost_per_kms','cost_per_hour', 'monthly_hour','monthly_kms','category_name', 'category_amount','category_amount_type',
     ];
 
     public function file()
