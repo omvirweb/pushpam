@@ -203,7 +203,7 @@ class FleetReportController extends Controller
                 }
             }
 
-        } elseif($fileKey === 'Voucher') { 
+        } elseif($fileKey === 'Voucher') {
             // Define headers
             $headers = [
                 '#',
@@ -279,7 +279,7 @@ class FleetReportController extends Controller
 
                 $rowNumber++;
             }
-    
+
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details') {
             // Initialize arrays
             $dynamicHeaders = [];
@@ -577,7 +577,7 @@ class FleetReportController extends Controller
                 return str_replace('.', '_', $header);
             }, array_keys($data[0] ?? []));
         }
-        
+
         $filteredData = array_filter($formattedData, function ($row) use ($searchColumns) {
             foreach ($searchColumns as $column) {
                 $columnName = str_replace('.', '_', $column['data']); // Convert dots to underscores
@@ -589,8 +589,28 @@ class FleetReportController extends Controller
             return true;
         });
 
-        $recordsFiltered = count($filteredData);
+        foreach ($filteredData as &$value) { // Use reference to update $filteredData
+            foreach ($value as $k => $val) {
+                if (is_array($val)) {
+                    $arrayValues = '';
 
+                    foreach ($val as $k2 => $val2) {
+                        if (is_array($val2)) {
+                            foreach ($val2 as $k3 => $val3) {
+                                $keyCount = $k2 + 1;
+                                $arrayValues .= "<li><strong>$k3 $keyCount:</strong> $val3</li>";
+                            }
+                        }
+                    }
+
+                    if (!empty($arrayValues)) {
+                        $value[$k] = '<ul>' . $arrayValues . '</ul>';
+                    }
+                }
+            }
+        }
+
+        $recordsFiltered = count($filteredData);
 
         // Paginate data
         $paginatedData = array_slice(array_values($filteredData), $start, $length);
