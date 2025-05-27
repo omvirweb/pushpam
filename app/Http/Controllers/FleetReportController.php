@@ -151,7 +151,7 @@ class FleetReportController extends Controller
         // Extract headers dynamically based on conditions
         $headers = [];
         $formattedData = [];
-        // dd($data);
+
         if ($fileKey === 'Stock Item Wise Vendor List') {
             // Define headers
             $headers = [
@@ -174,7 +174,7 @@ class FleetReportController extends Controller
                 if (!empty($item['Vendor List']) && is_array($item['Vendor List'])) {
                     foreach ($item['Vendor List'] as $vendor) {
                         $formattedData[] = [
-                            '#' => $rowNumber,
+                            '#' => $item['Sr.No.'] ?? $rowNumber,
                             'Name of Item' => $item['Name of Item'] ?? '-',
                             'Part No' => $item['Part No.'] ?? '-',
                             'Stock Group' => $item['Stock Group'] ?? '-',
@@ -189,7 +189,7 @@ class FleetReportController extends Controller
                 } else {
                     // If no vendors, create a row with empty vendor details
                     $formattedData[] = [
-                        '#' => $rowNumber,
+                        '#' => $item['Sr.No.'] ?? $rowNumber,
                         'Name of Item' => $item['Name of Item'] ?? '-',
                         'Part No' => $item['Part No.'] ?? '-',
                         'Stock Group' => $item['Stock Group'] ?? '-',
@@ -202,8 +202,7 @@ class FleetReportController extends Controller
                     $rowNumber++;
                 }
             }
-
-        } elseif($fileKey === 'Voucher') {
+        } elseif($fileKey === 'Voucher' || $fileKey === 'Daybook') {
             // Define headers
             $headers = [
                 '#',
@@ -220,6 +219,10 @@ class FleetReportController extends Controller
                 'CostCentre Name',
                 'Narration',
                 'Party Name',
+                'Address',
+                'Place of Supply',
+                'GST Reg. Type',
+                'GSTIN No.',
                 'KMS Reading',
                 'Hours Reading',
                 'Diesel(Ltr.)',
@@ -259,12 +262,17 @@ class FleetReportController extends Controller
                     'CostCentre Name' => $entry['GUCostCentre NameID'] ?? '-',
                     'Narration' => $entry['Narration'] ?? '-',
                     'Party Name' => $entry['Party Name'] ?? '-',
+                    'Address' => $entry['Address'] ?? '-',
+                    'Place of Supply' => $entry['Place of Supply'] ?? '-',
+                    'GST Reg. Type' => $entry['GST Reg. Type'] ?? '-',
+                    'GSTIN No.' => $entry['GSTIN No.'] ?? '-',
                     'KMS Reading' => $entry['KMS Reading'] ?? '-',
                     'Hours Reading' => $entry['Hours Reading'] ?? '-',
                     'Diesel(Ltr.)' => $entry['Diesel(Ltr.)'] ?? '-',
                     'No. of Trips' => $entry['No. of Trips'] ?? '-',
                     'Trip Factor' => $entry['Trip Factor'] ?? '-',
                     'Quantity' => $entry['Quantity'] ?? '-',
+                    'Inventory Entries' => $entry['Inventory Entries'] ?? '-',
                     'Ledger Entries' => $entry['Ledger Entries'] ?? '-',
                     'Ledger Name' => $entry['Ledger Name'] ?? '-',
                     'Amount' => $entry['Amount'] ?? '-',
@@ -281,6 +289,38 @@ class FleetReportController extends Controller
             }
 
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details') {
+            $headers = [
+                '#',
+                'Location',
+                'Door No.',
+                'Type of Outward',
+                'Total Cost',
+                'Monthly KMS',
+                'Monthly Hour',
+                'Cost per KMS',
+                'Cost per Hour',
+            ];
+
+            $formattedData = [];
+            $rowNumber = 1;  // Initialize row counter
+
+            foreach ($data as $item) {
+                $formattedData[] = [
+                    '#' => $rowNumber,
+                    'Date' => $item['Date'] ?? '-',
+                    'Location' => $item['Location'] ?? '-',
+                    'Door No.' => $item['Door No.'] ?? '-',
+                    'Type of Outward' => $item['Type of Outward'] ?? '-',
+                    'Total Cost' => $item['Total Cost'] ?? '-',
+                    'Monthly KMS' => $item['Monthly KMS'] ?? '-',
+                    'Monthly Hour' => $item['Monthly Hour'] ?? '-',
+                    'Cost per KMS' => $item['Cost per KMS'] ?? '-',
+                    'Cost per Hour' => $item['Cost per Hour'] ?? '-',
+                ];
+
+                $rowNumber++;
+            }
+        } elseif ($fileKey === 'Fleet Wise Diesel Report') {
             // Initialize arrays
             $dynamicHeaders = [];
             $formattedData = [];
@@ -397,13 +437,13 @@ class FleetReportController extends Controller
             $headers = [
                 '#',
                 'Door No',
-                'Status(Active/Inactive)',
+                'Vehicle Status',
                 'Invoice No',
                 'Name of Owner',
-                'Cost Center(Location)',
+                'Cost Center',
                 'Seaction',
                 'Date of Delivery',
-                'Capacity',
+                'Loading Capacity',
                 'Regd Date',
                 'Regd State',
                 'Regd RTO',
@@ -443,13 +483,13 @@ class FleetReportController extends Controller
                 $formattedData[] = [
                     '#' => $entry['S.No.'],
                     'Door No' => $entry['Door No.'] ?? '',
-                    'Status(Active/Inactive)' => $entry['Vehicle Status'][0] ?? '',
+                    'Vehicle Status' => $entry['Vehicle Status'][0] ?? '',
                     'Invoice No' => $entry['Invoice No.'] ?? '',
                     'Name of Owner' => $entry['Name of Owner'] ?? '',
-                    'Cost Center(Location)' => $entry['Cost Center'] ?? '',
+                    'Cost Center' => $entry['Cost Center'] ?? '',
                     'Seaction' => $entry['Seaction'] ?? '',
                     'Date of Delivery' => $entry['Date of Delivery'] ?? '',
-                    'Capacity' => $entry['Loading Capacity'] ?? '',
+                    'Loading Capacity' => $entry['Loading Capacity'] ?? '',
                     'Regd Date' => $entry['Regd. Date'] ?? '',
                     'Regd State' => $entry['Regd. State'] ?? '',
                     'Regd RTO' => $entry['Regd. RTO'] ?? '',
@@ -563,6 +603,82 @@ class FleetReportController extends Controller
                     'Diesel per Quantity' => $entry['Diesel per Quantity'] ?? '--',
                 ];
             }
+        } elseif ($fileKey === 'Fleet Wise Item Consumption') { // pending
+            $headers = [
+                'S.No.',
+                'Date',
+                'Vch No.',
+                'Door No.',
+                'Godown Name',
+                'KMS',
+                'HMR',
+                'Name of Item',
+                'Stock Group',
+                'Stock Category',
+                'Unit',
+                'Quantity',
+                'Rate',
+                'Amount',
+            ];
+
+            $formattedData = [];
+            $rowNumber = 1;  // Initialize row counter
+
+            foreach ($data as $item) {
+                $formattedData[] = [
+                    'S.No.' => $rowNumber,
+                    'Date' => $item['Date'] ?? '-',
+                    'Vch No.' => $item['Vch No.'] ?? '-',
+                    'Door No.' => $item['Door No.'] ?? '-',
+                    'Godown Name' => $item['Godown Name'] ?? '-',
+                    'KMS' => $item['KMS'] ?? '-',
+                    'HMR' => $item['HMR'] ?? '-',
+                    'Name of Item' => $item['Name of Item'] ?? '-',
+                    'Stock Group' => $item['Stock Group'] ?? '-',
+                    'Stock Category' => $item['Stock Category'] ?? '-',
+                    'Unit' => $item['Unit'] ?? '-',
+                    'Quantity' => $item['Quantity'] ?? '-',
+                    'Rate' => $item['Rate'] ?? '-',
+                    'Amount' => $item['Amount'] ?? '-',
+                ];
+
+                $rowNumber++;
+            }
+        } elseif ($fileKey === 'Material Out Register') {
+            $headers = [
+                'Date',
+                'Party Name',
+                'KMS',
+                'HMR',
+                'KMS Life',
+                'HMR Life',
+                'Voucher Type',
+                'Godown',
+                'Ref.No.',
+                'Voucher No.',
+                'Amount',
+            ];
+
+            $formattedData = [];
+            $rowNumber = 1;  // Initialize row counter
+
+            foreach ($data as $item) {
+                $formattedData[] = [
+                    'Date' => $item['Date'] ?? '-',
+                    'Party Name' => $item['Party Name'] ?? '-',
+                    'KMS' => $item['KMS'] ?? '-',
+                    'HMR' => $item['HMR'] ?? '-',
+                    'KMS Life' => $item['KMS Life'] ?? '-',
+                    'HMR Life' => $item['HMR Life'] ?? '-',
+                    'Voucher Type' => $item['Voucher Type'] ?? '-',
+                    'Godown' => $item['Godown'] ?? '-',
+                    'Ref.No.' => $item['Ref.No.'] ?? '-',
+                    'Voucher No.' => $item['Voucher No.'] ?? '-',
+                    'Amount' => $item['Amount'] ?? '-',
+                ];
+
+                $rowNumber++;
+            }
         } else {
             $formattedData = array_map(function ($row) {
                 $newRow = [];
@@ -614,7 +730,6 @@ class FleetReportController extends Controller
 
         // Paginate data
         $paginatedData = array_slice(array_values($filteredData), $start, $length);
-        //dd($paginatedData,$fileKey);
 
         // Return JSON response
         return response()->json([
