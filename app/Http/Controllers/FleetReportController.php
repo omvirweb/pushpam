@@ -431,8 +431,20 @@ class FleetReportController extends Controller
             foreach ($searchColumns as $column) {
                 $columnName = str_replace('.', '_', $column['data']); // Convert dots to underscores
                 $searchValue = trim($column['search']['value'] ?? '');
-                if (!empty($searchValue) && stripos($row[$columnName] ?? '', $searchValue) === false) {
-                    return false;
+
+                if (!empty($searchValue)) {
+                    $value = $row[$columnName] ?? '';
+
+                    if (is_array($value)) {
+                        $flattened = json_encode($value);
+                        if (stripos($flattened, $searchValue) === false) {
+                            return false;
+                        }
+                    } else {
+                        if (stripos($value, $searchValue) === false) {
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
