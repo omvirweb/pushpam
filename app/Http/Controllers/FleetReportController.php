@@ -67,7 +67,7 @@ class FleetReportController extends Controller
 
         // Only return the view with initial data
         return view('all_fleetdata', [
-            'fileTypes' => Type::orderBy('name', 'ASC')->get(),
+            'fileTypes' => Type::whereNotIn('name', ['Voucher', 'Daybook'])->orderBy('name', 'ASC')->get(),
             'companies' => $companies,
             'selectedType' => $selectedType,
             'selectedCompany' => $selectedCompany,
