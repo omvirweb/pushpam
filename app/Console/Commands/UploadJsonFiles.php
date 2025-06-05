@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Company;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\FleetFile;
 use App\Models\Type;
 
@@ -32,6 +33,15 @@ class UploadJsonFiles extends Command
         if (empty($files)) {
             $this->warn("No JSON files found in directory: $sourceDir");
             return 0; // No error, but no files found
+        }
+
+        $existingFiles = Storage::files('public/uploads');
+        $jsonFiles = array_filter($existingFiles, function ($file) {
+            return Str::endsWith($file, '.json');
+        });
+
+        if (!empty($jsonFiles)) {
+            Storage::delete($jsonFiles);
         }
 
         foreach ($files as $file) {
