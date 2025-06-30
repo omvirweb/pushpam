@@ -14,15 +14,13 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FleetReportController extends Controller
 {
-    public function index()
-    {
+    public function index() {
         // Fetch all files to populate the dropdown
         $files = FleetFile::all();
         return view('fleet.report', compact('files'));
     }
 
-    public function generateReport(Request $request)
-    {
+    public function generateReport(Request $request) {
 
         // Validate the selected file
         /*$request->validate([
@@ -39,9 +37,7 @@ class FleetReportController extends Controller
         return Excel::download(new FleetReportExport($fileId), 'fleet_report_' . $file->file_name . '.xlsx');
     }
 
-    // public function displayAllFleetData(Request $request)
-    // {
-
+    // public function displayAllFleetData(Request $request) {
     //     $allData = '';
     //     $listdata ='';
     //     if($request->has('listdata'))
@@ -53,29 +49,21 @@ class FleetReportController extends Controller
     //     $header_arr = array('High Speed Diesel','Lubricants & Oils','Other Items','Spare Parts','Tools & Kits','Tyre-Tube-Flaps','Welding');
     //     return view('all_fleetdata',['alldata'=>$allData,'header_arr'=>$header_arr,'filesList'=>$filesList,'listdata'=>$listdata]);
     // }
-    public function displayAllFleetData(Request $request)
-    {
+
+    public function displayAllFleetData(Request $request) {
         $user = auth()->user();
-        $selectedType = $request->get('type');
-        $selectedCompany = $request->get('company');
+        $companies = ($user->id == 1) ? Company::all() : $user->companies;
+        $fileTypes = Type::whereNotIn('name', ['Voucher', 'Daybook'])->orderBy('name', 'ASC')->get();
 
-        if ($user->id == 1) {
-            $companies = Company::all();
-        } else {
-            $companies = $user->companies;
-        }
-
-        // Only return the view with initial data
         return view('all_fleetdata', [
-            'fileTypes' => Type::whereNotIn('name', ['Voucher', 'Daybook'])->orderBy('name', 'ASC')->get(),
+            'fileTypes' => $fileTypes,
             'companies' => $companies,
-            'selectedType' => $selectedType,
-            'selectedCompany' => $selectedCompany,
+            'selectedType' => $request->type,
+            'selectedCompany' => $request->company,
         ]);
     }
 
-    public function getFleetData(Request $request)
-    {
+    public function getFleetData(Request $request) {
         $user = auth()->user();
         $selectedType = $request->get('type');
         $selectedCompany = $request->get('company');
@@ -487,9 +475,7 @@ class FleetReportController extends Controller
 
     }
 
-
-    public function loadFleetData(Request $request)
-    {
+    public function loadFleetData(Request $request) {
         $selectedFileId = $request->get('fileId');
         $page = $request->get('page', 1);  // Default to 1st page if not set
         $perPage = 500;  // Number of records to load per request
@@ -517,9 +503,7 @@ class FleetReportController extends Controller
         return response()->json($fileData);
     }
 
-
-    public function getFiles(Request $request)
-    {
+    public function getFiles(Request $request) {
         $user = auth()->user();
         $type = $request->get('type');
         $company = $request->get('company');
@@ -541,10 +525,7 @@ class FleetReportController extends Controller
         return response()->json($latestFile); // Return only the latest file
     }
 
-
-
-    public function deleteFleetFile($id)
-    {
+    public function deleteFleetFile($id) {
         try {
             $fleetFile = FleetFile::find($id);
             if ($fleetFile) {
