@@ -98,7 +98,7 @@ class FleetReportController extends Controller
         }
 
         $filePath = storage_path('app/public/uploads/' . $filesList->file_name);
-        // dd($filePath);
+
         if (!file_exists($filePath)) {
             return response()->json([
                 'data' => [],
@@ -360,13 +360,17 @@ class FleetReportController extends Controller
             $headers = [
                 "S.No.", "Location", "Door No.", "No. of Trips", "Quantity", "Diesel(Ltr.)", "Monthly\nKMS", "Monthly\nHours", "Lead in KMS", "HSD per KM", "HSD per HOUR", "Diesel per Quantity"
             ];
-        } elseif ($fileKey === 'Fleet Wise Item Consumption' || $fileKey === 'FleetWiseItemConsumption') { // pending
+        } elseif ($fileKey === 'Fleet Wise Item Consumption' || $fileKey === 'FleetWiseItemConsumption') {
             $headers = [
                 'S.No.', 'Date', 'Vch No.', 'Door No.', 'Godown Name', 'KMS', 'HMR', 'Name of Item', 'Stock Group', 'Stock Category', 'Unit', 'Quantity', 'Rate', 'Amount'
             ];
         } elseif ($fileKey === 'Material Out Register') {
             $headers = [
                 'S.No.', 'Date', 'Party Name', 'KMS', 'HMR', 'KMS Life', 'HMR Life', 'Voucher Type', 'Godown', 'Ref.No.', 'Voucher No.', 'Amount',
+            ];
+        } elseif ($fileKey === 'Item Life') {
+            $headers = [
+                'S.No.', 'Date', 'Vch No.', 'Door No.', 'Godown Name', 'KMS', 'HMR', 'Name of Item', 'Stock Group', 'Stock Category', 'Unit', 'Quantity', 'Rate', 'Amount'
             ];
         } else {
             $formattedData = array_map(function ($row) {
@@ -384,7 +388,7 @@ class FleetReportController extends Controller
         }
 
         $fileTypes = [
-            'Voucher', 'Daybook', 'Fleet Wise Diesel Parts Oil Tyre Details', 'Fleet Details', 'Fleet Wise Trip - Diesel - KMS - Hours', 'Fleet Wise Item Consumption', 'FleetWiseItemConsumption', 'Material Out Register'
+            'Voucher', 'Daybook', 'Fleet Wise Diesel Parts Oil Tyre Details', 'Fleet Details', 'Fleet Wise Trip - Diesel - KMS - Hours', 'Fleet Wise Item Consumption', 'FleetWiseItemConsumption', 'Material Out Register', 'Item Life'
         ];
 
         if (in_array($fileKey, $fileTypes)) {
