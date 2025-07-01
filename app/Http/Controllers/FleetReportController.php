@@ -53,7 +53,9 @@ class FleetReportController extends Controller
     public function displayAllFleetData(Request $request) {
         $user = auth()->user();
         $companies = ($user->id == 1) ? Company::all() : $user->companies;
-        $fileTypes = Type::whereNotIn('name', ['Voucher', 'Daybook'])->orderBy('name', 'ASC')->get();
+
+        $excludeTypes = ['Voucher', 'Daybook', 'Fleet Wise Location', 'Fleet Wise Cost', 'Fleet Wise Efficiency', 'Fleet Wise Outward Cost', 'Godown Wise Stock', 'Item Wise Vendor', 'Top Consumable', 'Totals'];
+        $fileTypes = Type::whereNotIn('name', $excludeTypes)->orderBy('name', 'ASC')->get();
 
         return view('all_fleetdata', [
             'fileTypes' => $fileTypes,
