@@ -54,8 +54,11 @@ class FleetReportController extends Controller
         $user = auth()->user();
         $companies = ($user->id == 1) ? Company::all() : $user->companies;
 
-        $excludeTypes = ['Voucher', 'Daybook', 'Fleet Wise Location', 'Fleet Wise Cost', 'Fleet Wise Efficiency', 'Fleet Wise Outward Cost', 'Godown Wise Stock', 'Item Wise Vendor', 'Top Consumable', 'Totals'];
-        $fileTypes = Type::whereNotIn('name', $excludeTypes)->orderBy('name', 'ASC')->get();
+        // $excludeTypes = ['Voucher', 'Daybook', 'Fleet Wise Location', 'Fleet Wise Cost', 'Fleet Wise Efficiency', 'Fleet Wise Outward Cost', 'Godown Wise Stock', 'Item Wise Vendor', 'Top Consumable', 'Totals'];
+        // $fileTypes = Type::whereNotIn('name', $excludeTypes)->orderBy('name', 'ASC')->get();
+
+        $includeTypes = ['Fleet Wise Location', 'Fleet Wise Cost', 'Fleet Wise Efficiency', 'Fleet Wise Outward Cost', 'Material Out Register', 'Godown Wise Stock', 'Item Wise Vendor', 'Item Life', 'Monthly Order Forcast', 'Top Consumable'];
+        $fileTypes = Type::whereIn('name', $includeTypes)->orderBy('name', 'ASC')->get();
 
         return view('all_fleetdata', [
             'fileTypes' => $fileTypes,
@@ -72,6 +75,7 @@ class FleetReportController extends Controller
         $start = (int) $request->get('start', 0);
         $length = (int) $request->get('length', 50);
         $searchColumns = $request->get('columns', []);
+
         if ($user->id == 1) {
             $filesList = FleetFile::where('type', $selectedType)
                 ->when($selectedCompany, function ($query) use ($selectedCompany) {
@@ -142,7 +146,7 @@ class FleetReportController extends Controller
         $headers = [];
         $formattedData = [];
 
-        if ($fileKey === 'Stock Item Wise Vendor List') {
+        if ($fileKey === 'Stock Item Wise Vendor List' || $fileKey === 'Item Wise Vendor') {
             // Define headers
             $headers = [
                 '#', 'Name of Item', 'Part No', 'Stock Group', 'Stock Category', 'Vendor Name', 'Supplied Quantity', 'Last Supplied Price', 'Average Price'
@@ -191,11 +195,11 @@ class FleetReportController extends Controller
                 'Place of Supply', 'GST Reg. Type', 'GSTIN No.', 'KMS Reading', 'Hours Reading', 'Diesel(Ltr.)',
                 'No. of Trips', 'Trip Factor', 'Quantity', 'Inventory Entries', 'Ledger Entries',
             ];
-        } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details') {
+        } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details' || $fileKey === 'Fleet Wise Outward Cost') {
             $headers = [
                 'S.No.', 'Location', 'Door No.', 'Type of Outward', 'Total Cost', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'
             ];
-        } elseif ($fileKey === 'Fleet Wise Diesel Report') {
+        } elseif ($fileKey === 'Fleet Wise Diesel Report' || $fileKey === 'Fleet Wise Cost') {
             // Initialize arrays
             $dynamicHeaders = [];
             $formattedData = [];
@@ -260,7 +264,7 @@ class FleetReportController extends Controller
                 // Combine data in the same order as headers
                 $formattedData[] = array_merge($prefixData, $categoryData, $suffixData);
             }
-        } elseif ($fileKey === 'TOP Consumable Report') {
+        } elseif ($fileKey === 'TOP Consumable Report' || $fileKey === 'Top Consumable') {
             // Static columns
             $staticHeaders = [
                 '#',
@@ -308,11 +312,11 @@ class FleetReportController extends Controller
 
                 $formattedData[] = $rowData;
             }
-        } elseif ($fileKey === 'Fleet Details') {
+        } elseif ($fileKey === 'Fleet Details' || $fileKey === 'Fleet Wise Location') {
             $headers = [
                 'S.No.', 'Door No.', 'Vehicle Status', 'Invoice No.', 'Name of Owner', 'Cost Center', 'Seaction', 'Date of Delivery', 'Loading Capacity', 'Regd. Date', 'Regd. State', 'Regd. RTO', 'Regd.No.', 'Engine No.', 'Chasis No.', 'Road Tax From', 'Road Tax To', 'Fitness From', 'Fitness To', 'Permit for State', 'Permit From', 'Permit To', 'PESO From', 'PESO To', 'Calibration From', 'Calibration To', 'Remarks', 'Name of Financer', 'Agreement Number', 'Loan Amount', 'Tenure', 'EMI Start Date', 'EMI End Date', 'EMI Amount', 'Insured By', 'Insurance Policy No.', 'Insurance IDV', 'Insurance From', 'Insurance To', 'PUC From', 'PUC To'
             ];
-        } elseif ($fileKey === 'Godown Wise Item Summary') {
+        } elseif ($fileKey === 'Godown Wise Item Summary' || $fileKey === 'Godown Wise Stock') {
             $staticHeaders = ['#', 'Name of Item', 'Part No', 'Stock Group', 'Stock Category'];
             $uniqueGodowns = [];
 
@@ -358,7 +362,7 @@ class FleetReportController extends Controller
                 }
                 $formattedData[] = $rowData;
             }
-        } elseif ($fileKey === 'Fleet Wise Trip - Diesel - KMS - Hours') {
+        } elseif ($fileKey === 'Fleet Wise Trip - Diesel - KMS - Hours' || $fileKey === 'Fleet Wise Efficiency') {
             $headers = [
                 "S.No.", "Location", "Door No.", "No. of Trips", "Quantity", "Diesel(Ltr.)", "Monthly\nKMS", "Monthly\nHours", "Lead in KMS", "HSD per KM", "HSD per HOUR", "Diesel per Quantity"
             ];
@@ -368,12 +372,58 @@ class FleetReportController extends Controller
             ];
         } elseif ($fileKey === 'Material Out Register') {
             $headers = [
-                'S.No.', 'Date', 'Party Name', 'KMS', 'HMR', 'KMS Life', 'HMR Life', 'Voucher Type', 'Godown', 'Ref.No.', 'Voucher No.', 'Amount',
+                'S.No.', 'Date', 'Party Name', 'KMS', 'Net KMS', 'HMR', 'Net HMR', 'KMS Life', 'HMR Life', 'Voucher Type', 'Godown', 'Ref.No.', 'Voucher No.', 'Amount',
             ];
         } elseif ($fileKey === 'Item Life') {
             $headers = [
                 'S.No.', 'Date', 'Vch No.', 'Door No.', 'Godown Name', 'KMS', 'HMR', 'Name of Item', 'Stock Group', 'Stock Category', 'Unit', 'Quantity', 'Rate', 'Amount'
             ];
+        } elseif ($fileKey === 'Monthly Order Forcast') {
+            $staticHeaders = ['#', 'Name of Item', 'Part No.', 'Stock Group', 'Stock Category'];
+            $uniqueGodowns = [];
+
+            // Collect unique Godown names
+            foreach ($data as $row) {
+                if (isset($row['Godowns']) && is_array($row['Godowns'])) {
+                    foreach ($row['Godowns'] as $godown) {
+                        if (isset($godown['Godown Name']) && !in_array($godown['Godown Name'], $uniqueGodowns)) {
+                            $uniqueGodowns[] = $godown['Godown Name'];
+                        }
+                    }
+                }
+            }
+
+            // Create dynamic Godown headers
+            $dynamicHeaders = [];
+            foreach ($uniqueGodowns as $godownName) {
+                $dynamicHeaders[] = "$godownName: Total Consumption";
+                $dynamicHeaders[] = "$godownName: Monthly Consumption";
+                $dynamicHeaders[] = "$godownName: Closing As On";
+                $dynamicHeaders[] = "$godownName: Order Qty";
+            }
+
+            $headers = array_merge($staticHeaders, $dynamicHeaders);
+
+            // Format data rows
+            $formattedData = [];
+            foreach ($data as $index => $row) {
+                $rowData = [
+                    '#' => $row['S.No.'] ?? '--',
+                    'Name of Item' => $row['Name of Item'] ?? '--',
+                    'Part No' => $row['Part No.'] ?? '--',
+                    'Stock Group' => $row['Stock Group'] ?? '--',
+                    'Stock Category' => $row['Stock Category'] ?? '--',
+                ];
+
+                foreach ($uniqueGodowns as $godownName) {
+                    $godownData = collect($row['Godowns'])->firstWhere('Godown Name', $godownName);
+                    $rowData["$godownName: Total Consumption"] = $godownData['Total Consumption'] ?? '--';
+                    $rowData["$godownName: Monthly Consumption"] = $godownData['Monthly Consumption'] ?? '--';
+                    $rowData["$godownName: Closing As On"] = $godownData['Closing As On'] ?? '--';
+                    $rowData["$godownName: Order Qty"] = $godownData['Order Qty'] ?? '--';
+                }
+                $formattedData[] = $rowData;
+            }
         } else {
             $formattedData = array_map(function ($row) {
                 $newRow = [];
@@ -389,9 +439,11 @@ class FleetReportController extends Controller
             }, array_keys($data[0] ?? []));
         }
 
-        $fileTypes = [
-            'Voucher', 'Daybook', 'Fleet Wise Diesel Parts Oil Tyre Details', 'Fleet Details', 'Fleet Wise Trip - Diesel - KMS - Hours', 'Fleet Wise Item Consumption', 'FleetWiseItemConsumption', 'Material Out Register', 'Item Life'
-        ];
+        // $fileTypes = [
+        //     'Voucher', 'Daybook', 'Fleet Wise Diesel Parts Oil Tyre Details', 'Fleet Details', 'Fleet Wise Trip - Diesel - KMS - Hours', 'Fleet Wise Item Consumption', 'FleetWiseItemConsumption', 'Material Out Register', 'Item Life'
+        // ];
+
+        $fileTypes = ['Fleet Wise Efficiency', 'Fleet Wise Location', 'Fleet Wise Outward Cost', 'Material Out Register', 'Item Life'];
 
         if (in_array($fileKey, $fileTypes)) {
             // Prepare headers and map original to transformed (e.g., 'Ref. No.' => 'Ref_ No_')
