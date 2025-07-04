@@ -14,11 +14,8 @@ class UploadJsonFiles extends Command
     protected $description = 'Upload JSON files from the specified directory and process them.';
 
     public function handle() {
-        // $sourceDir = '/home/ftpuserpushpam/ftp';
-        // $processedDirBase = '/home/ftpuserpushpam/uploaded';
-
-        $sourceDir = public_path('ftp');
-        $processedDirBase = public_path('uploaded');
+        $sourceDir = '/home/ftpuserpushpam/ftp';
+        $processedDirBase = '/home/ftpuserpushpam/uploaded';
 
         $batchDirName = date('Y-m-d_H-i-s');
         $processedDir = $processedDirBase . DIRECTORY_SEPARATOR . $batchDirName;
