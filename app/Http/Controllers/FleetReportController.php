@@ -196,9 +196,47 @@ class FleetReportController extends Controller
                 'No. of Trips', 'Trip Factor', 'Quantity', 'Inventory Entries', 'Ledger Entries',
             ];
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details' || $fileKey === 'Fleet Wise Outward Cost') {
-            $headers = [
-                'S.No.', 'Location', 'Door No.', 'Type of Outward', 'Total Cost', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'
-            ];
+            $staticHeaders = ['Location', 'Door No.', 'Type of Outward', 'Total Cost', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'];
+            $uniqueOutwardTypes = [];
+
+            foreach ($data as $row) {
+                if (isset($row['Outward Types']) && is_array($row['Outward Types'])) {
+                    foreach ($row['Outward Types'] as $outwardType) {
+                        if (isset($outwardType['Outward Name']) && !in_array($outwardType['Outward Name'], $uniqueOutwardTypes)) {
+                            $uniqueOutwardTypes[] = $outwardType['Outward Name'];
+                        }
+                    }
+                }
+            }
+
+            $dynamicHeaders = [];
+            foreach ($uniqueOutwardTypes as $outwardType) {
+                $dynamicHeaders[] = "$outwardType: Outward Name";
+                $dynamicHeaders[] = "$outwardType: Outward Amount";
+            }
+
+            $headers = array_merge($staticHeaders, $dynamicHeaders);
+
+            $formattedData = [];
+            foreach ($data as $row) {
+                $rowData = [
+                    'Location' => $row['Location'] ?? '--',
+                    'Door No' => $row['Door No.'] ?? '--',
+                    'Type of Outward' => $row['Type of Outward'] ?? '--',
+                    'Total Cost' => $row['Total Cost'] ?? '--',
+                    'Monthly KMS' => $row['Monthly KMS'] ?? '--',
+                    'Monthly Hour' => $row['Monthly Hour'] ?? '--',
+                    'Cost per KMS' => $row['Cost per KMS'] ?? '--',
+                    'Cost per Hour' => $row['Cost per Hour'] ?? '--',
+                ];
+
+                foreach ($uniqueOutwardTypes as $outwardTypeName) {
+                    $outwardTypeData = collect($row['Outward Types'])->firstWhere('Outward Name', $outwardTypeName);
+                    $rowData["$outwardTypeName: Outward Amount"] = $outwardTypeData['Outward Amount'] ?? '--';
+                }
+
+                $formattedData[] = $rowData;
+            }
         } elseif ($fileKey === 'Fleet Wise Diesel Report' || $fileKey === 'Fleet Wise Cost') {
             // Initialize arrays
             $dynamicHeaders = [];
@@ -372,11 +410,11 @@ class FleetReportController extends Controller
             ];
         } elseif ($fileKey === 'Material Out Register') {
             $headers = [
-                'S.No.', 'Date', 'Party Name', 'KMS', 'Net KMS', 'HMR', 'Net HMR', 'KMS Life', 'HMR Life', 'Voucher Type', 'Godown', 'Ref.No.', 'Voucher No.', 'Amount',
+                'S.No.', 'Date', 'Party Name', 'KMS', 'Net KMS', 'HMR', 'Net HMR', 'Voucher Type', 'Godown', 'Ref.No.', 'Voucher No.', 'Amount',
             ];
         } elseif ($fileKey === 'Item Life') {
             $headers = [
-                'S.No.', 'Date', 'Vch No.', 'Door No.', 'Godown Name', 'KMS', 'HMR', 'Name of Item', 'Stock Group', 'Stock Category', 'Unit', 'Quantity', 'Rate', 'Amount'
+                'S.No.', 'Date', 'Vch No.', 'Door No.', 'Godown Name', 'KMS', 'KMS Life', 'HMR', 'HMR Life', 'Name of Item', 'Stock Group', 'Stock Category', 'Unit', 'Quantity', 'Rate', 'Amount'
             ];
         } elseif ($fileKey === 'Monthly Order Forcast') {
             $staticHeaders = ['#', 'Name of Item', 'Part No.', 'Stock Group', 'Stock Category'];
@@ -406,7 +444,7 @@ class FleetReportController extends Controller
 
             // Format data rows
             $formattedData = [];
-            foreach ($data as $index => $row) {
+            foreach ($data as $row) {
                 $rowData = [
                     '#' => $row['S.No.'] ?? '--',
                     'Name of Item' => $row['Name of Item'] ?? '--',
@@ -422,6 +460,7 @@ class FleetReportController extends Controller
                     $rowData["$godownName: Closing As On"] = $godownData['Closing As On'] ?? '--';
                     $rowData["$godownName: Order Qty"] = $godownData['Order Qty'] ?? '--';
                 }
+
                 $formattedData[] = $rowData;
             }
         } else {
@@ -439,11 +478,7 @@ class FleetReportController extends Controller
             }, array_keys($data[0] ?? []));
         }
 
-        // $fileTypes = [
-        //     'Voucher', 'Daybook', 'Fleet Wise Diesel Parts Oil Tyre Details', 'Fleet Details', 'Fleet Wise Trip - Diesel - KMS - Hours', 'Fleet Wise Item Consumption', 'FleetWiseItemConsumption', 'Material Out Register', 'Item Life'
-        // ];
-
-        $fileTypes = ['Fleet Wise Efficiency', 'Fleet Wise Location', 'Fleet Wise Outward Cost', 'Material Out Register', 'Item Life'];
+        $fileTypes = ['Fleet Wise Efficiency', 'Fleet Wise Location', 'Material Out Register', 'Item Life'];
 
         if (in_array($fileKey, $fileTypes)) {
             // Prepare headers and map original to transformed (e.g., 'Ref. No.' => 'Ref_ No_')
