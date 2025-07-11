@@ -196,7 +196,7 @@ class FleetReportController extends Controller
                 'No. of Trips', 'Trip Factor', 'Quantity', 'Inventory Entries', 'Ledger Entries',
             ];
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details' || $fileKey === 'Fleet Wise Outward Cost') {
-            $staticHeaders = ['Location', 'Door No.', 'Type of Outward', 'Total Cost', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'];
+            $staticHeaders = ['Location', 'Door No.', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'];
             $uniqueOutwardTypes = [];
 
             foreach ($data as $row) {
@@ -214,6 +214,8 @@ class FleetReportController extends Controller
                 $dynamicHeaders[] = "$outwardType: Outward Name";
                 $dynamicHeaders[] = "$outwardType: Outward Amount";
             }
+
+            $dynamicHeaders[] = 'Total Cost';
 
             $headers = array_merge($staticHeaders, $dynamicHeaders);
 
