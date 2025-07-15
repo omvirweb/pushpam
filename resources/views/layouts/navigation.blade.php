@@ -157,6 +157,17 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('fleet.reportScreen')" :active="request()->routeIs('fleet.reportScreen')">
+                {{ __('Generate Report Screen') }}
+            </x-responsive-nav-link>
+            @if(Auth::check() && Auth::user()->usertype == 1)
+                <x-responsive-nav-link :href="route('companies.index')" :active="request()->routeIs('companies.index')">
+                    {{ __('Company Master') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
+                    {{ __('User Master') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
