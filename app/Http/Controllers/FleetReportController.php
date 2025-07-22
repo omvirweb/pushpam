@@ -196,7 +196,14 @@ class FleetReportController extends Controller
                 'No. of Trips', 'Trip Factor', 'Quantity', 'Inventory Entries', 'Ledger Entries',
             ];
         } elseif ($fileKey === 'Fleet Wise Diesel Parts Oil Tyre Details' || $fileKey === 'Fleet Wise Outward Cost') {
-            $staticHeaders = ['Location', 'Door No.', 'Monthly KMS', 'Monthly Hour', 'Cost per KMS', 'Cost per Hour'];
+            $staticHeaders = [
+                'Location',
+                'Door No.',
+                // 'Monthly KMS',
+                // 'Monthly Hour',
+                // 'Cost per KMS',
+                // 'Cost per Hour'
+            ];
             $uniqueOutwardTypes = [];
 
             foreach ($data as $row) {
@@ -211,6 +218,10 @@ class FleetReportController extends Controller
 
             $dynamicHeaders = [];
             foreach ($uniqueOutwardTypes as $outwardType) {
+                if ($outwardType == 'Accidental' || $outwardType == 'HSD') {
+                    continue;
+                }
+
                 $dynamicHeaders[] = "$outwardType: Outward Name";
                 $dynamicHeaders[] = "$outwardType: Outward Amount";
             }
@@ -226,13 +237,17 @@ class FleetReportController extends Controller
                     'Door No' => $row['Door No.'] ?? '--',
                     'Type of Outward' => $row['Type of Outward'] ?? '--',
                     'Total Cost' => $row['Total Cost'] ?? '--',
-                    'Monthly KMS' => $row['Monthly KMS'] ?? '--',
-                    'Monthly Hour' => $row['Monthly Hour'] ?? '--',
-                    'Cost per KMS' => $row['Cost per KMS'] ?? '--',
-                    'Cost per Hour' => $row['Cost per Hour'] ?? '--',
+                    // 'Monthly KMS' => $row['Monthly KMS'] ?? '--',
+                    // 'Monthly Hour' => $row['Monthly Hour'] ?? '--',
+                    // 'Cost per KMS' => $row['Cost per KMS'] ?? '--',
+                    // 'Cost per Hour' => $row['Cost per Hour'] ?? '--',
                 ];
 
                 foreach ($uniqueOutwardTypes as $outwardTypeName) {
+                    if ($outwardType == 'Accidental' || $outwardType == 'HSD') {
+                        continue;
+                    }
+
                     $outwardTypeData = collect($row['Outward Types'])->firstWhere('Outward Name', $outwardTypeName);
                     $rowData["$outwardTypeName: Outward Amount"] = $outwardTypeData['Outward Amount'] ?? '--';
                 }
@@ -567,7 +582,6 @@ class FleetReportController extends Controller
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $recordsFiltered,
         ]);
-
     }
 
     public function loadFleetData(Request $request) {

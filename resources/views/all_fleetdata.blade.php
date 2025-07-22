@@ -221,7 +221,7 @@
                             scrollY: '50vh',
                             scroller: true,
                             deferRender: true,
-                            autoWidth: false,
+                            autoWidth: true,
                             ordering: false,
                             language: {
                                 processing: "Loading data...",
